@@ -45,6 +45,32 @@ cd d:\WorkSpace\Discord
 ```powershell
 tar -czf community-deploy.tgz --exclude=node_modules --exclude=.next --exclude=*.tgz .
 scp community-deploy.tgz hxy@192.168.1.14:/home/hxy/work/company/
+ssh hxy@192.168.1.14 "tar -xzf ~/work/company/community-deploy.tgz -C ~/work/company/community && cd ~/work/company/community && npm ci && npx prisma migrate deploy && npm run build && systemctl --user restart community.service"
+```
+
+| 项 | 路径 |
+|----|------|
+| 裸仓库（`origin`） | `hxy@192.168.1.14:work/company/community.git` |
+| 运行目录（工作区） | `~/work/company/community`（由 bare clone，含 `.env`） |
+
+**日常发布（推荐）** — 见 Skill **`community-database`** 与同仓库 [`docs/CICD.md`](../../../docs/CICD.md)：
+
+```powershell
+cd d:\WorkSpace\Discord
+.\scripts\push-origin.ps1
+```
+
+`git push origin main` 后 **post-receive** 自动：pull → `npm ci` → `prisma migrate deploy` → build → 重启。日志：`~/work/company/community/deploy.log`。
+
+更新 hook：`bash ~/work/company/community/deploy/install-hook.sh`
+
+**说明**：本机 `origin` 即 bare 仓库；`.env` 仅在服务器工作区，不入库。
+
+### 兜底部署（无 Git / hook 失效）
+
+```powershell
+tar -czf community-deploy.tgz --exclude=node_modules --exclude=.next --exclude=*.tgz .
+scp community-deploy.tgz hxy@192.168.1.14:/home/hxy/work/company/
 ssh hxy@192.168.1.14 "tar -xzf ~/work/company/community-deploy.tgz -C ~/work/company/community && cd ~/work/company/community && npm ci && npx prisma migrate deploy && npm run build && bash deploy/install-services.sh"
 ```
 
@@ -117,7 +143,11 @@ ss -tlnp | grep -E '3000|8080'
 
 - `deploy/remote-setup.sh` — PostgreSQL + Node（需 `SUDO_PASS`）
 - `deploy/migrate-and-build.sh` — 写 `.env`、迁移、build
+<<<<<<< HEAD
 - `deploy/install-services.sh` — 双端口 systemd（`start-service.sh` 为其入口）
+=======
+- `deploy/start-service.sh` — systemd
+>>>>>>> 57170c6 (ci: add local CI scripts, post-receive CD hook, and CICD docs)
 - `deploy/install-hook.sh` — 安装 post-receive
 
 上传脚本后：`sed -i 's/\r$//' deploy/*.sh`

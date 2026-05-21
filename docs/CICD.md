@@ -99,5 +99,8 @@ GitHub Actions、Docker 镜像仓库、K8s、双环境、语义化 Release。
 | [`scripts/push-origin.ps1`](../scripts/push-origin.ps1) | CI + push |
 | [`deploy/post-receive`](../deploy/post-receive) | 服务器 CD |
 | [`deploy/install-hook.sh`](../deploy/install-hook.sh) | 安装 hook |
+<<<<<<< HEAD
 | [`deploy/install-services.sh`](../deploy/install-services.sh) | 双端口 systemd |
 | [`deploy/port-proxy.mjs`](../deploy/port-proxy.mjs) | 外放 → 本机代理 |
+=======
+>>>>>>> 57170c6 (ci: add local CI scripts, post-receive CD hook, and CICD docs)
