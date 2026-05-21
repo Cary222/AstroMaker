@@ -1,8 +1,7 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from ".prisma/client";
 
 export type FeedTab = "hot" | "following" | "latest";
 
@@ -16,8 +15,11 @@ export type FeedPost = {
   reposts: number;
   createdAt: Date;
   images: string[];
+  pinned: boolean;
+  featured: boolean;
   author: { id: string; name: string | null; image: string | null };
   category: { id: string; name: string; slug: string } | null;
+  tags: Array<{ topic: { id: string; name: string; slug: string } }>;
   _count: { comments: number };
 };
 
@@ -36,10 +38,11 @@ export async function getFeedPosts(opts: {
   const { tab = "latest", categorySlug, limit = 20, cursor, followerId } = opts;
 
   // Hot: sort by score = likes + views; Following: filter by followed authors
+  // Pinned posts always come first
   const orderBy =
     tab === "hot"
-      ? [{ likes: "desc" as const }, { views: "desc" as const }, { createdAt: "desc" as const }]
-      : { createdAt: "desc" as const };
+      ? [{ pinned: "desc" as const }, { likes: "desc" as const }, { views: "desc" as const }, { createdAt: "desc" as const }]
+      : [{ pinned: "desc" as const }, { createdAt: "desc" as const }];
 
   const where: Prisma.PostWhereInput = {
     published: true,
@@ -57,7 +60,7 @@ export async function getFeedPosts(opts: {
       where: { followerId },
       select: { followingId: true },
     });
-    const followedIds = followed.map((f) => f.followingId);
+    const followedIds = followed.map((f: { followingId: string }) => f.followingId);
     if (followedIds.length === 0) {
       return { posts: [], nextCursor: null };
     }
@@ -71,6 +74,11 @@ export async function getFeedPosts(opts: {
     include: {
       author: { select: { id: true, name: true, image: true } },
       category: { select: { id: true, name: true, slug: true } },
+      tags: {
+        include: {
+          topic: { select: { id: true, name: true, slug: true } },
+        },
+      },
       _count: { select: { comments: true } },
     },
   });

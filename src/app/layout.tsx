@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { auth } from "@/lib/auth";
+import { getUnreadCountAction } from "@/actions/notification";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,6 +29,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+
+  const initialUnreadCount = session?.user?.id
+    ? (await getUnreadCountAction()).count
+    : 0;
 
   return (
     <html lang="zh-CN" suppressHydrationWarning>
@@ -53,9 +59,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col antialiased`}
       >
         <ThemeProvider>
-          <Header session={session} />
+          <Header session={session} initialUnreadCount={initialUnreadCount} />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />
+          <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
     </html>

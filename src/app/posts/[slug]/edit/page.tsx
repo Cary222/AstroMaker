@@ -1,9 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { getPostBySlug } from "@/lib/posts";
-import { normalizePostSlug } from "@/lib/slug";
-import { getCategories } from "@/lib/posts";
+import { getPostBySlug, getCategories } from "@/lib/posts";
 import { EditPostForm } from "@/components/posts/EditPostForm";
+import { normalizePostSlug, postPath } from "@/lib/slug";
 
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -14,53 +13,54 @@ export default async function EditPostPage({
 }) {
   const { slug: slugParam } = await params;
   const slug = normalizePostSlug(slugParam);
-  const [post, session, categories] = await Promise.all([
-    getPostBySlug(slug),
-    auth(),
-    getCategories(),
-  ]);
+  const post = await getPostBySlug(slug);
 
   if (!post) notFound();
+
+  const session = await auth();
   if (!session?.user) redirect("/login");
 
-  // 仅作者可编辑
-  if (post.authorId !== session.user.id) redirect(postPath(slug));
+  if (post.authorId !== session.user.id) redirect(postPath(post.slug));
 
-  // 超过 24 小时不可编辑
   const age = Date.now() - post.createdAt.getTime();
-  if (age > EDIT_WINDOW_MS) redirect(postPath(slug));
+  if (age > EDIT_WINDOW_MS) redirect(postPath(post.slug));
+
+  const categories = await getCategories();
 
   return (
-    <div className="page-grid">
-      <div className="col-center">
-        <div style={{ marginBottom: 8 }}>
-          <a
-            href={postPath(slug)}
-            style={{
-              fontSize: "0.875rem",
-              color: "var(--color-muted)",
-              textDecoration: "none",
-            }}
-          >
-            ← 返回帖子
+    <div className="edit-post-layout">
+      <div className="edit-post-container">
+        {/* 返回按钮 */}
+        <div className="edit-post-back">
+          <a href={postPath(post.slug)} className="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12,19 5,12 12,5"/>
+            </svg>
+            返回帖子
           </a>
         </div>
-        <h1 className="mb-2 text-2xl font-bold">编辑帖子</h1>
-        <p className="mb-6 text-muted">发帖 24 小时内可编辑。</p>
-        <EditPostForm
-          post={{
-            id: post.id,
-            title: post.title,
-            body: post.body,
-            categoryId: post.categoryId ?? null,
-          }}
-          categories={categories}
-        />
+
+        {/* 编辑表单卡片 */}
+        <div className="edit-post-card">
+          <div className="edit-post-header">
+            <h1 className="edit-post-title">编辑帖子</h1>
+            <p className="edit-post-subtitle">发帖 24 小时内可编辑</p>
+          </div>
+
+          <EditPostForm
+            post={{
+              id: post.id,
+              title: post.title,
+              body: post.body,
+              categoryId: post.categoryId ?? null,
+              images: post.images || [],
+              tags: post.tags ?? [],
+            }}
+            categories={categories}
+          />
+        </div>
       </div>
     </div>
   );
-}
-
-function postPath(s: string) {
-  return `/posts/${encodeURIComponent(s)}`;
 }

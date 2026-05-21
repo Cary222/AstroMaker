@@ -8,8 +8,10 @@ import type { NotificationItem } from "@/actions/notification";
 
 export function NotificationPanel({
   initialCount,
+  onCountChange,
 }: {
   initialCount: number;
+  onCountChange?: (delta: number) => void;
 }) {
   const [count, setCount] = useState(initialCount);
   const [open, setOpen] = useState(false);
@@ -24,13 +26,17 @@ export function NotificationPanel({
       const res = await fetch("/api/notifications");
       if (res.ok) {
         const data = await res.json();
-        setNotifications(data.notifications ?? []);
+        const items: NotificationItem[] = data.notifications ?? [];
+        setNotifications(items);
+        const unreadCount = items.filter((n) => !n.read).length;
+        setCount(unreadCount);
+        onCountChange?.(unreadCount);
         setHasLoaded(true);
       }
     } finally {
       setLoading(false);
     }
-  }, [hasLoaded]);
+  }, [hasLoaded, onCountChange]);
 
   const toggleOpen = async () => {
     if (!open) {
@@ -43,6 +49,7 @@ export function NotificationPanel({
     await markAllAsReadAction();
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setCount(0);
+    onCountChange?.(0);
   };
 
   const handleMarkOneRead = async (id: string) => {
@@ -50,7 +57,9 @@ export function NotificationPanel({
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
-    setCount((c) => Math.max(0, c - 1));
+    const newCount = Math.max(0, count - 1);
+    setCount(newCount);
+    onCountChange?.(newCount);
   };
 
   const unread = notifications.filter((n) => !n.read).length;

@@ -1,8 +1,18 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { getCategories } from "@/lib/posts";
+import { getHotTopics } from "@/actions/topic";
 
-export async function LeftColumn() {
-  const session = await auth();
+type LeftColumnProps = {
+  currentCategory?: string;
+};
+
+export async function LeftColumn({ currentCategory }: LeftColumnProps) {
+  const [session, categories, hotTopics] = await Promise.all([
+    auth(),
+    getCategories(),
+    getHotTopics(12),
+  ]);
 
   return (
     <aside className="col-left">
@@ -89,7 +99,7 @@ export async function LeftColumn() {
           社区导航
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <NavLink href="/" icon={<HomeIcon />} active>
+          <NavLink href="/" icon={<HomeIcon />} active={!currentCategory}>
             动态广场
           </NavLink>
           <NavLink href="/?section=hot" icon={<FlameIcon />}>
@@ -103,6 +113,28 @@ export async function LeftColumn() {
           </NavLink>
         </nav>
       </div>
+
+      {/* 分类导航 */}
+      {categories.length > 0 && (
+        <div className="sidebar-card">
+          <div className="sidebar-card-title">
+            <LayersIcon />
+            分类浏览
+          </div>
+          <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {categories.map((cat) => (
+              <NavLink
+                key={cat.id}
+                href={`/c/${cat.slug}`}
+                icon={<FolderIcon />}
+                active={currentCategory === cat.slug}
+              >
+                {cat.name}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+      )}
 
       {/* 创作工具 */}
       <div className="sidebar-card">
@@ -130,11 +162,23 @@ export async function LeftColumn() {
           热门标签
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {["#3D打印", "#天文摄影", "#望远镜DIY", "#ASIAIR", "#赤道仪", "#目镜", "#天文台", "#流星雨"].map((tag) => (
-            <Link key={tag} href={`/?tag=${tag.slice(1)}`} className="tag-pill">
-              {tag}
-            </Link>
-          ))}
+          {hotTopics.length > 0 ? (
+            hotTopics.slice(0, 12).map((topic) => (
+              <Link
+                key={topic.id}
+                href={`/tags/${topic.slug}`}
+                className="tag-pill"
+              >
+                #{topic.name}
+              </Link>
+            ))
+          ) : (
+            ["3D打印", "天文摄影", "望远镜DIY", "ASIAIR", "赤道仪", "目镜", "天文台", "流星雨"].map((tag) => (
+              <Link key={tag} href={`/tags/${tag}`} className="tag-pill">
+                #{tag}
+              </Link>
+            ))
+          )}
         </div>
       </div>
     </aside>
@@ -249,6 +293,24 @@ function TagIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
       <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+    </svg>
+  );
+}
+
+function LayersIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12,2 2,7 12,12 22,7"/>
+      <polyline points="2,17 12,22 22,17"/>
+      <polyline points="2,12 12,17 22,12"/>
     </svg>
   );
 }

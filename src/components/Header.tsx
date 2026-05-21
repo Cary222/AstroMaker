@@ -8,8 +8,15 @@ import { MobileMenu } from "@/components/layout/MobileMenu";
 import { NotificationPanel } from "@/components/layout/NotificationPanel";
 import type { Session } from "next-auth";
 
-export function Header({ session }: { session: Session | null }) {
-  const [unreadCount, setUnreadCount] = useState(0);
+export function Header({
+  session,
+  initialUnreadCount = 0,
+}: {
+  session: Session | null;
+  initialUnreadCount?: number;
+}) {
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     if (!session?.user) return;
@@ -28,7 +35,7 @@ export function Header({ session }: { session: Session | null }) {
     // Poll every 30 seconds
     const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
-  }, [session?.user]);
+  }, [session?.user, initialUnreadCount]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[var(--color-border)] bg-[var(--color-card)]/95 backdrop-blur-md shadow-sm">
@@ -55,14 +62,22 @@ export function Header({ session }: { session: Session | null }) {
 
         {/* 搜索框 */}
         <div className="flex-1 flex justify-center mx-2">
-          <div className="relative w-full max-w-sm">
+          <form
+            action="/search"
+            method="get"
+            className="relative w-full max-w-sm"
+            style={{ display: "flex" }}
+          >
             <SearchIcon />
             <input
               type="search"
+              name="q"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder="搜索帖子、话题、用户..."
               className="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-input-bg)] px-4 py-2 pl-9 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all"
             />
-          </div>
+          </form>
         </div>
 
         {/* 右：操作按钮 */}
@@ -85,7 +100,7 @@ export function Header({ session }: { session: Session | null }) {
                 </Link>
               ) : null}
               {/* 通知按钮 */}
-              <NotificationPanel initialCount={unreadCount} />
+              <NotificationPanel initialCount={unreadCount} onCountChange={setUnreadCount} />
               {/* 用户头像 */}
               <div className="flex items-center gap-2 cursor-pointer group">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-purple)] flex items-center justify-center text-white font-bold text-sm shadow-sm">

@@ -10,9 +10,11 @@ type CenterColumnProps = {
   session: Session | null;
   initialPosts: FeedPost[];
   initialCursor: string | null;
+  categoryName?: string;
+  categorySlug?: string;
 };
 
-export function CenterColumn({ session, initialPosts, initialCursor }: CenterColumnProps) {
+export function CenterColumn({ session, initialPosts, initialCursor, categoryName, categorySlug }: CenterColumnProps) {
   const [activeTab, setActiveTab] = useState<FeedTab>("latest");
   const [posts, setPosts] = useState<FeedPost[]>(initialPosts);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
@@ -27,6 +29,7 @@ export function CenterColumn({ session, initialPosts, initialCursor }: CenterCol
       setError(null);
       try {
         const params = new URLSearchParams({ tab, limit: "20" });
+        if (categorySlug) params.set("category", categorySlug);
         const res = await fetch(`/api/feed?${params}`);
         if (!res.ok) throw new Error("加载失败");
         const data = await res.json();
@@ -38,7 +41,7 @@ export function CenterColumn({ session, initialPosts, initialCursor }: CenterCol
         setLoading(false);
       }
     },
-    [activeTab],
+    [activeTab, categorySlug],
   );
 
   const loadMore = useCallback(async () => {
@@ -47,6 +50,7 @@ export function CenterColumn({ session, initialPosts, initialCursor }: CenterCol
     setError(null);
     try {
       const params = new URLSearchParams({ tab: activeTab, cursor, limit: "20" });
+      if (categorySlug) params.set("category", categorySlug);
       const res = await fetch(`/api/feed?${params}`);
       if (!res.ok) throw new Error("加载失败");
       const data = await res.json();
@@ -57,11 +61,27 @@ export function CenterColumn({ session, initialPosts, initialCursor }: CenterCol
     } finally {
       setLoading(false);
     }
-  }, [cursor, loading, activeTab]);
+  }, [cursor, loading, activeTab, categorySlug]);
 
   return (
     <div className="col-center flex flex-col gap-4">
-      {/* Hero 横幅 */}
+      {/* 分类页头部 */}
+      {categoryName ? (
+        <div className="feed-container" style={{ padding: "20px 24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <CategoryIcon />
+            <div>
+              <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-foreground)", margin: 0 }}>
+                {categoryName}
+              </h1>
+              <p style={{ fontSize: "0.875rem", color: "var(--color-muted)", margin: "4px 0 0" }}>
+                浏览该分类下的所有帖子
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+      /* Hero 横幅 */
       <div className="hero-banner">
         <div style={{
           position: "absolute",
@@ -101,6 +121,7 @@ export function CenterColumn({ session, initialPosts, initialCursor }: CenterCol
           )}
         </div>
       </div>
+      )}
 
       {/* Tab 导航 + 帖子 Feed */}
       <div className="feed-container">
@@ -209,5 +230,25 @@ function PlusIcon() {
       <line x1="12" y1="5" x2="12" y2="19"/>
       <line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
+  );
+}
+
+function CategoryIcon() {
+  return (
+    <div style={{
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      background: "var(--color-accent-light)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "var(--color-accent)",
+    }}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+      </svg>
+    </div>
   );
 }

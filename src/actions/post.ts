@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { postPath, slugify } from "@/lib/slug";
 import { ensureUniqueSlug } from "@/lib/posts";
 import { createPostSchema } from "@/lib/validations/post";
+import { createOrGetTopics } from "@/actions/topic";
 
 export type CreatePostState = {
   errors?: {
@@ -25,10 +26,19 @@ export async function createPostAction(
     redirect("/login?callbackUrl=/posts/new");
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { bannedAt: true },
+  });
+  if (dbUser?.bannedAt) {
+    return { errors: { _form: ["账号已被封禁，无法发帖"] } };
+  }
+
   const raw = {
     title: formData.get("title"),
     body: formData.get("body"),
     categoryId: formData.get("categoryId") || undefined,
+    tags: formData.get("tags") as string || undefined,
   };
 
   const parsed = createPostSchema.safeParse(raw);
@@ -36,7 +46,7 @@ export async function createPostAction(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { title, body, categoryId } = parsed.data;
+  const { title, body, categoryId, tags: tagNames } = parsed.data;
   const slug = await ensureUniqueSlug(slugify(title));
 
   // 支持多图（未来扩展：图片上传后可传入 images 参数）
@@ -44,6 +54,12 @@ export async function createPostAction(
   const images: string[] = rawImages
     ? JSON.parse(rawImages as string)
     : [];
+
+  // 处理标签
+  const tagList = tagNames
+    ? tagNames.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 5)
+    : [];
+  const topicIds = tagList.length > 0 ? await createOrGetTopics(tagList) : [];
 
   const post = await prisma.post.create({
     data: {
@@ -55,6 +71,16 @@ export async function createPostAction(
       images,
     },
   });
+
+  // Create post-tag associations
+  if (topicIds.length > 0) {
+    await prisma.postTag.createMany({
+      data: topicIds.map((topicId) => ({
+        postId: post.id,
+        topicId,
+      })),
+    });
+  }
 
   redirect(postPath(post.slug));
 }
@@ -108,13 +134,40 @@ export async function editPostAction(
     return { errors: { _form: ["发帖超过 24 小时，无法编辑"] } };
   }
 
-  await prisma.post.update({
-    where: { id: postId },
-    data: {
-      title,
-      body,
-      categoryId: categoryId || null,
-    },
+  // 处理图片更新
+  const rawImages = formData.get("images");
+  const images: string[] = rawImages ? JSON.parse(rawImages as string) : [];
+
+  // 处理标签更新
+  const rawTags = formData.get("tags") as string | null;
+  const tagList = rawTags
+    ? rawTags.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 5)
+    : [];
+  const topicIds = tagList.length > 0 ? await createOrGetTopics(tagList) : [];
+
+  await prisma.$transaction(async (tx: typeof prisma) => {
+    await tx.post.update({
+      where: { id: postId },
+      data: {
+        title,
+        body,
+        categoryId: categoryId || null,
+        images,
+      },
+    });
+
+    // 删除旧的标签关联
+    await tx.postTag.deleteMany({ where: { postId } });
+
+    // 创建新的标签关联
+    if (topicIds.length > 0) {
+      await tx.postTag.createMany({
+        data: topicIds.map((topicId) => ({
+          postId,
+          topicId,
+        })),
+      });
+    }
   });
 
   redirect(postPath(post.slug));

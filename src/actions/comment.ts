@@ -23,6 +23,14 @@ export async function createCommentAction(
     redirect("/login");
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { bannedAt: true },
+  });
+  if (dbUser?.bannedAt) {
+    return { errors: { _form: ["账号已被封禁，无法评论"] } };
+  }
+
   const raw = {
     body: formData.get("body"),
     postId: formData.get("postId"),

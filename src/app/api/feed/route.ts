@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     const result = await getFeedPosts({ tab, cursor, categorySlug, limit });
     return NextResponse.json(result);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

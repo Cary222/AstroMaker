@@ -10,37 +10,87 @@ export type SuggestedUserData = {
   followersCount: number;
 };
 
-export async function getHotTopics(limit = 10) {
-  return prisma.topic.findMany({
-    orderBy: { posts: "desc" },
-    take: limit,
-  });
-}
+export type TopicData = {
+  id: string;
+  name: string;
+  slug: string;
+  posts: number;
+  lastUsedAt: Date | null;
+};
 
-export async function getSuggestedUsers(limit = 5): Promise<SuggestedUserData[]> {
-  return prisma.user.findMany({
+export async function getHotTopics(limit = 20, days = 7) {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  return prisma.topic.findMany({
+    where: {
+      lastUsedAt: { gte: cutoff },
+    },
+    orderBy: [
+      { posts: "desc" },
+      { lastUsedAt: "desc" },
+    ],
     take: limit,
-    orderBy: { createdAt: "desc" },
     select: {
       id: true,
       name: true,
-      image: true,
-      bio: true,
-      followersCount: true,
+      slug: true,
+      posts: true,
+      lastUsedAt: true,
     },
   });
 }
 
-export async function createTopicAction(name: string) {
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fa5]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+export async function searchTopics(query: string, limit = 10) {
+  if (!query.trim()) return [];
 
-  return prisma.topic.upsert({
-    where: { slug },
-    update: { posts: { increment: 1 } },
-    create: { name, slug, posts: 1 },
+  return prisma.topic.findMany({
+    where: {
+      name: {
+        contains: query,
+        mode: "insensitive",
+      },
+    },
+    orderBy: { posts: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      posts: true,
+      lastUsedAt: true,
+    },
   });
+}
+
+export async function createOrGetTopics(tagNames: string[]): Promise<string[]> {
+  const now = new Date();
+  const results: string[] = [];
+
+  for (const name of tagNames) {
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9\u4e00-\u9fa5]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    if (!slug) continue;
+
+    const topic = await prisma.topic.upsert({
+      where: { slug },
+      update: {
+        posts: { increment: 1 },
+        lastUsedAt: now,
+      },
+      create: {
+        name,
+        slug,
+        posts: 1,
+        lastUsedAt: now,
+      },
+    });
+
+    results.push(topic.id);
+  }
+
+  return results;
 }

@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from ".prisma/client";
 
 export type NotificationItem = {
   id: string;
@@ -24,7 +24,7 @@ export async function getNotificationsAction(opts?: {
   const session = await auth();
   if (!session?.user?.id) return { error: "未登录" };
 
-  const { unreadOnly, cursor, limit = 30 } = opts ?? {};
+  const { unreadOnly, limit = 30 } = opts ?? {};
 
   const where: Prisma.NotificationWhereInput = {
     userId: session.user.id,
@@ -86,16 +86,4 @@ export async function markAllAsReadAction() {
 
   revalidatePath("/");
   return { success: true };
-}
-
-export async function createNotification(opts: {
-  type: string;
-  content: string;
-  userId: string;
-  actorId?: string;
-  targetId?: string;
-}) {
-  await prisma.notification.create({
-    data: opts,
-  });
 }

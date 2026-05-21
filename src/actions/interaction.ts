@@ -10,11 +10,15 @@ export async function toggleLikeAction(postId: string) {
     return { error: "请先登录" };
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { bannedAt: true },
+  });
+  if (dbUser?.bannedAt) return { error: "账号已被封禁" };
+
   const post = await prisma.post.findUnique({ where: { id: postId } });
   if (!post) return { error: "帖子不存在" };
 
-  // 简化的点赞逻辑（可扩展为独立的 Like 表）
-  const delta = post.likes >= 0 ? 1 : 0;
   await prisma.post.update({
     where: { id: postId },
     data: { likes: { increment: 1 } },
@@ -36,6 +40,13 @@ export async function followUserAction(targetUserId: string) {
   if (!session?.user?.id) {
     return { error: "请先登录" };
   }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { bannedAt: true },
+  });
+  if (dbUser?.bannedAt) return { error: "账号已被封禁" };
+
   if (session.user.id === targetUserId) {
     return { error: "不能关注自己" };
   }

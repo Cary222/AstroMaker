@@ -3,7 +3,8 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import type { UserRole } from "@prisma/client";
+import type { UserRole } from ".prisma/client";
+import { createModerationLog } from "@/lib/moderation";
 
 export type UserWithCounts = {
   id: string;
@@ -112,6 +113,15 @@ export async function banUserAction(userId: string) {
     data: { bannedAt: new Date() },
   });
 
+  // 记录审计日志
+  await createModerationLog({
+    action: "BAN_USER",
+    targetId: userId,
+    targetType: "User",
+    actorId: session.user.id,
+    reason: `封禁用户: ${target.email}`,
+  });
+
   revalidatePath("/admin/users");
   return { success: true };
 }
@@ -122,9 +132,21 @@ export async function unbanUserAction(userId: string) {
     return { error: "无权限" };
   }
 
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target) return { error: "用户不存在" };
+
   await prisma.user.update({
     where: { id: userId },
     data: { bannedAt: null },
+  });
+
+  // 记录审计日志
+  await createModerationLog({
+    action: "UNBAN_USER",
+    targetId: userId,
+    targetType: "User",
+    actorId: session.user.id,
+    reason: `解封用户: ${target.email}`,
   });
 
   revalidatePath("/admin/users");

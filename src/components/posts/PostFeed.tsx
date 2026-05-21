@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Feed } from "@/components/posts/Feed";
-import type { FeedPost, FeedTab } from "@/actions/feed";
+import type { FeedPost } from "@/actions/feed";
 
 export function PostFeed({
   initialPosts,
