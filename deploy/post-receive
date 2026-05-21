@@ -15,6 +15,7 @@ while read -r _ newrev refname; do
   fi
 
   cd "$WORK_TREE"
+  unset GIT_DIR
   git pull origin main
 
   if [[ -f package-lock.json ]]; then
