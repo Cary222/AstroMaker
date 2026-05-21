@@ -1,4 +1,6 @@
-# 社区项目 — 需求路线图
+# 社区项目 — 需求路线图（简版）
+
+> 完整技术选型与各期实现说明见 **[TECH_STACK_AND_ROADMAP.md](./TECH_STACK_AND_ROADMAP.md)**。
 
 ## 已完成
 

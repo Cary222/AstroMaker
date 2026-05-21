@@ -60,9 +60,12 @@ npm run dev
 
 提升管理员：`npm run db:promote-admin -- your@email.com`（需重新登录生效）
 
-## 下一期需求
+## 文档
 
-见 [`docs/NEXT_PHASE.md`](docs/NEXT_PHASE.md)
+| 文档 | 说明 |
+|------|------|
+| [`docs/TECH_STACK_AND_ROADMAP.md`](docs/TECH_STACK_AND_ROADMAP.md) | **技术选型 + 四至六期路线图（主文档）** |
+| [`docs/NEXT_PHASE.md`](docs/NEXT_PHASE.md) | 期次 checklist（简版） |
 
 ## 远程服务器（192.168.1.14）
 
@@ -71,6 +74,3 @@ npm run dev
 - 服务器运维：Skill **`community-server`**（`.cursor/skills/community-server/SKILL.md`）
 - 数据库 / 迁移 / 查数：Skill **`community-database`**（`.cursor/skills/community-database/SKILL.md`）
 
-## 待办（三期）
-
-管理（删帖、封禁）、通知、OAuth 登录等。
