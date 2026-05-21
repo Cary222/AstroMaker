@@ -6,7 +6,7 @@ AUTH_SECRET=$(openssl rand -base64 32)
 cat > .env <<EOF
 DATABASE_URL="postgresql://community:community@localhost:5432/community?schema=public"
 AUTH_SECRET="${AUTH_SECRET}"
-AUTH_URL="http://192.168.1.14:3000"
+AUTH_URL="http://192.168.1.14:8080"
 EOF
 
 npx prisma migrate deploy

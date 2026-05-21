@@ -2,7 +2,7 @@
 
 > 文档版本：与仓库 `main` 初始提交同步  
 > 本地路径：`d:\WorkSpace\Discord`  
-> 生产环境：http://192.168.1.14:3000（`~/work/company/community`）
+> 生产外放：http://192.168.1.14:8080；本机生产端口 `127.0.0.1:3000`（`~/work/company/community`）
 
 ---
 
@@ -105,7 +105,7 @@ scripts/            # smoke-test、db-inspect、setup.ps1
 |------|------|
 | `DATABASE_URL` | Prisma 连接 PostgreSQL |
 | `AUTH_SECRET` | Auth.js 签名（生产必须随机强密钥） |
-| `AUTH_URL` | 站点根 URL（本地 `http://localhost:3000`，生产 `http://192.168.1.14:3000`） |
+| `AUTH_URL` | 站点根 URL（本地 `http://localhost:3000`，生产外放 `http://192.168.1.14:8080`） |
 
 ### 2.6 数据模型（已实现）
 

@@ -78,7 +78,7 @@ npm run dev
 
 ## 远程服务器（192.168.1.14）
 
-生产部署在 `hxy@192.168.1.14:~/work/company/community`，访问 http://192.168.1.14:3000。
+生产部署在 `hxy@192.168.1.14:~/work/company/community`，外放访问 http://192.168.1.14:8080（本机生产端口 `127.0.0.1:3000`）。
 
 - 服务器运维：Skill **`community-server`**（`.cursor/skills/community-server/SKILL.md`）
 - 数据库 / 迁移 / 查数：Skill **`community-database`**（`.cursor/skills/community-database/SKILL.md`）

@@ -47,10 +47,26 @@ sequenceDiagram
 2. `npm ci`
 3. `npx prisma migrate deploy`
 4. `npm run build`
-5. `systemctl --user restart community.service`
-6. 健康检查：service active + `curl http://127.0.0.1:3000/`
+5. `bash deploy/install-services.sh`（重启 `community` + `community-proxy`）
+6. 健康检查：生产端口 `127.0.0.1:3000` + 外放端口 `127.0.0.1:8080`
 
 **部署日志**：`~/work/company/community/deploy.log`
+
+## 双端口
+
+| 端口 | 监听 | 用途 |
+|------|------|------|
+| **3000** | `127.0.0.1` | Next.js 生产进程（`community.service`），仅本机 / hook 探测 |
+| **8080** | `0.0.0.0` | 外放访问（`community-proxy.service` → `deploy/port-proxy.mjs`） |
+
+局域网访问：**http://192.168.1.14:8080**（`AUTH_URL` 须与外放端口一致）。
+
+配置：[`deploy/ports.env`](../deploy/ports.env)。首次或改端口后：
+
+```bash
+ssh hxy@192.168.1.14
+bash ~/work/company/community/deploy/install-services.sh
+```
 
 ### 安装 / 更新 hook
 
@@ -83,3 +99,5 @@ GitHub Actions、Docker 镜像仓库、K8s、双环境、语义化 Release。
 | [`scripts/push-origin.ps1`](../scripts/push-origin.ps1) | CI + push |
 | [`deploy/post-receive`](../deploy/post-receive) | 服务器 CD |
 | [`deploy/install-hook.sh`](../deploy/install-hook.sh) | 安装 hook |
+| [`deploy/install-services.sh`](../deploy/install-services.sh) | 双端口 systemd |
+| [`deploy/port-proxy.mjs`](../deploy/port-proxy.mjs) | 外放 → 本机代理 |

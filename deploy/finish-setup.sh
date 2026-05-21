@@ -7,7 +7,7 @@ if [ ! -f .env ] || grep -q 'change-me-run-openssl' .env 2>/dev/null; then
   cat > .env <<EOF
 DATABASE_URL="postgresql://community:community@localhost:5432/community?schema=public"
 AUTH_SECRET="${AUTH_SECRET}"
-AUTH_URL="http://192.168.1.14:3000"
+AUTH_URL="http://192.168.1.14:8080"
 EOF
 fi
 
@@ -46,4 +46,4 @@ loginctl enable-linger "$USER" 2>/dev/null || true
 sleep 2
 systemctl --user status community.service --no-pager
 ss -tlnp | grep 3000 || true
-echo "Done: http://192.168.1.14:3000"
+echo "Done: http://192.168.1.14:8080"

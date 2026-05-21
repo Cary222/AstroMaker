@@ -43,7 +43,7 @@ if [ ! -f .env ]; then
   cat > .env <<EOF
 DATABASE_URL="postgresql://community:community@localhost:5432/community?schema=public"
 AUTH_SECRET="${AUTH_SECRET}"
-AUTH_URL="http://192.168.1.14:3000"
+AUTH_URL="http://192.168.1.14:8080"
 EOF
 fi
 
@@ -87,5 +87,5 @@ systemctl --user restart community.service
 loginctl enable-linger "$USER" 2>/dev/null || true
 
 echo "==> 部署完成"
-echo "    访问: http://192.168.1.14:3000"
+echo "    访问: http://192.168.1.14:8080"
 systemctl --user status community.service --no-pager || true

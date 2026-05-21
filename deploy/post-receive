@@ -27,11 +27,29 @@ while read -r _ newrev refname; do
   npx prisma generate
   npx prisma migrate deploy
   npm run build
-  systemctl --user restart community.service
+
+  if [[ -f deploy/fix-crlf.py ]]; then
+    python3 deploy/fix-crlf.py || true
+  fi
+
+  if [[ -x deploy/install-services.sh ]]; then
+    bash deploy/install-services.sh
+  else
+    systemctl --user restart community.service
+    systemctl --user try-restart community-proxy.service 2>/dev/null || true
+  fi
+
+  # shellcheck disable=SC1091
+  [[ -f deploy/ports.env ]] && source deploy/ports.env
+  PROD_PORT="${PROD_PORT:-3000}"
+  EXTERNAL_PORT="${EXTERNAL_PORT:-8080}"
 
   sleep 2
   systemctl --user is-active --quiet community.service
-  curl -sf http://127.0.0.1:3000/ >/dev/null
+  curl -sf "http://127.0.0.1:${PROD_PORT}/" >/dev/null
+  if systemctl --user is-active --quiet community-proxy.service 2>/dev/null; then
+    curl -sf "http://127.0.0.1:${EXTERNAL_PORT}/" >/dev/null
+  fi
 
-  echo "deploy ok: $newrev"
+  echo "deploy ok: $newrev (prod :${PROD_PORT}, external :${EXTERNAL_PORT})"
 done
