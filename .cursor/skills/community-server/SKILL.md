@@ -20,7 +20,33 @@ ssh hxy@192.168.1.14
 cd ~/work/company/community
 ```
 
-**说明**：本机工作区 `d:\WorkSpace\Discord` 与服务器代码为两套目录；未做远程软链。改代码后需同步到服务器再构建（见下方「更新部署」）。
+**Git 远端（已配置）**：
+
+| 项 | 路径 |
+|----|------|
+| 裸仓库（`origin`） | `hxy@192.168.1.14:work/company/community.git` |
+| 运行目录（工作区） | `~/work/company/community`（由 bare clone，含 `.env`） |
+
+**日常发布（推荐）** — 见 Skill **`community-database`** 与同仓库 [`docs/CICD.md`](../../../docs/CICD.md)：
+
+```powershell
+cd d:\WorkSpace\Discord
+.\scripts\push-origin.ps1
+```
+
+`git push origin main` 后 **post-receive** 自动：pull → `npm ci` → `prisma migrate deploy` → build → 重启。日志：`~/work/company/community/deploy.log`。
+
+更新 hook：`bash ~/work/company/community/deploy/install-hook.sh`
+
+**说明**：本机 `origin` 即 bare 仓库；`.env` 仅在服务器工作区，不入库。
+
+### 兜底部署（无 Git / hook 失效）
+
+```powershell
+tar -czf community-deploy.tgz --exclude=node_modules --exclude=.next --exclude=*.tgz .
+scp community-deploy.tgz hxy@192.168.1.14:/home/hxy/work/company/
+ssh hxy@192.168.1.14 "tar -xzf ~/work/company/community-deploy.tgz -C ~/work/company/community && cd ~/work/company/community && npm ci && npx prisma migrate deploy && npm run build && systemctl --user restart community.service"
+```
 
 ## 服务启停
 
@@ -90,29 +116,14 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/
 ss -tlnp | grep 3000
 ```
 
-## 从 Windows 更新部署
+## 首次安装脚本（仅新机）
 
-在 **PowerShell**（项目根 `d:\WorkSpace\Discord`）：
+- `deploy/remote-setup.sh` — PostgreSQL + Node（需 `SUDO_PASS`）
+- `deploy/migrate-and-build.sh` — 写 `.env`、迁移、build
+- `deploy/start-service.sh` — systemd
+- `deploy/install-hook.sh` — 安装 post-receive
 
-```powershell
-# 1. 打包（排除 node_modules、.next）
-tar -czf community-deploy.tgz --exclude=node_modules --exclude=.next --exclude=community-deploy.tgz .
-
-# 2. 上传并解压
-scp community-deploy.tgz hxy@192.168.1.14:/home/hxy/work/company/
-ssh hxy@192.168.1.14 "tar -xzf ~/work/company/community-deploy.tgz -C ~/work/company/community"
-
-# 3. 远程构建重启（SSH 单条命令，避免 PowerShell 解析 $()）
-ssh hxy@192.168.1.14 "cd ~/work/company/community && npm install && npx prisma migrate deploy && npm run build && systemctl --user restart community.service"
-```
-
-服务器脚本（已存在）：
-
-- `deploy/migrate-and-build.sh` — 写 `.env`、迁移、seed、build
-- `deploy/start-service.sh` — 注册并启动 systemd
-- `deploy/remote-setup.sh` — 首次装 PostgreSQL（需 `SUDO_PASS`）
-
-上传脚本后先 `sed -i 's/\r$//' deploy/*.sh` 去 CRLF。
+上传脚本后：`sed -i 's/\r$//' deploy/*.sh`
 
 ## 目录结构（服务器）
 

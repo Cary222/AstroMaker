@@ -65,7 +65,16 @@ npm run dev
 | 文档 | 说明 |
 |------|------|
 | [`docs/TECH_STACK_AND_ROADMAP.md`](docs/TECH_STACK_AND_ROADMAP.md) | **技术选型 + 四至六期路线图（主文档）** |
+| [`docs/CICD.md`](docs/CICD.md) | **现阶段 CI/CD（本机检查 + push 自动部署）** |
 | [`docs/NEXT_PHASE.md`](docs/NEXT_PHASE.md) | 期次 checklist（简版） |
+
+## 发布到服务器（CI/CD）
+
+```powershell
+.\scripts\push-origin.ps1
+```
+
+本机 `lint` + `build` 通过后 push 到 `origin`，服务器自动部署。详见 [`docs/CICD.md`](docs/CICD.md)。
 
 ## 远程服务器（192.168.1.14）
 

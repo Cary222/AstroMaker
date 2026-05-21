@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# 安装到 ~/work/company/community.git/hooks/post-receive
+set -euo pipefail
+
+WORK_TREE="$HOME/work/company/community"
+LOG="$WORK_TREE/deploy.log"
+
+exec >>"$LOG" 2>&1
+echo "===== deploy $(date -Iseconds) ====="
+
+while read -r _ newrev refname; do
+  if [[ "$refname" != "refs/heads/main" ]]; then
+    echo "skip non-main: $refname"
+    continue
+  fi
+
+  cd "$WORK_TREE"
+  git pull origin main
+
+  if [[ -f package-lock.json ]]; then
+    npm ci
+  else
+    npm install
+  fi
+
+  npx prisma generate
+  npx prisma migrate deploy
+  npm run build
+  systemctl --user restart community.service
+
+  sleep 2
+  systemctl --user is-active --quiet community.service
+  curl -sf http://127.0.0.1:3000/ >/dev/null
+
+  echo "deploy ok: $newrev"
+done
