@@ -6,9 +6,9 @@
 import http from "node:http";
 
 const PROD_HOST = process.env.PROD_HOST || "127.0.0.1";
-const PROD_PORT = Number(process.env.PROD_PORT || 3000);
+const PROD_PORT = Number(process.env.PROD_PORT || 3001);
 const EXTERNAL_HOST = process.env.EXTERNAL_HOST || "0.0.0.0";
-const EXTERNAL_PORT = Number(process.env.EXTERNAL_PORT || 8080);
+const EXTERNAL_PORT = Number(process.env.EXTERNAL_PORT || 3000);
 
 const server = http.createServer((clientReq, clientRes) => {
   const proxyReq = http.request(

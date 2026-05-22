@@ -14,8 +14,8 @@ if [[ -f "$APP/deploy/ports.env" ]]; then
 fi
 
 PROD_HOST="${PROD_HOST:-127.0.0.1}"
-PROD_PORT="${PROD_PORT:-3000}"
-EXTERNAL_PORT="${EXTERNAL_PORT:-8080}"
+PROD_PORT="${PROD_PORT:-3001}"
+EXTERNAL_PORT="${EXTERNAL_PORT:-3000}"
 
 mkdir -p "$UNIT_DIR"
 
