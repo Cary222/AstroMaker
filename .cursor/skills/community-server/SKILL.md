@@ -140,7 +140,8 @@ ss -tlnp | grep -E '3000|8080'
 | 3000 无响应 | `systemctl --user status community.service`；看 `journalctl --user -u community.service -n 50` |
 | 数据库连接失败 | `sudo systemctl start postgresql`；检查 `.env` 中 `DATABASE_URL` |
 | Prisma P1001 | PostgreSQL 未启动或 URL 格式错误（勿含 PowerShell 破坏的换行） |
-| 局域网无法访问 | 防火墙放行 TCP **8080**（3000 仅本机，无需外放） |
+| 局域网无法访问 Web | 确认 `0.0.0.0:3000` 在监听；`sudo bash deploy/enable-lan-access.sh` 若开了 ufw |
+| 局域网连不上库 | 执行 [`deploy/enable-lan-access.sh`](../../../deploy/enable-lan-access.sh)（需 sudo） |
 | 构建失败 | 在服务器执行 `npm run build` 看完整错误；确认 Node ≥ 18 |
 
 数据库 schema、迁移、查表见 Skill **`community-database`**。
@@ -161,6 +162,6 @@ npm run db:promote-admin -- user@example.com
 
 ## 本地开发（Windows）
 
-无 Docker 时无法连库；有 Docker 则 `docker compose up -d` + `npm run db:migrate` + `npm run dev`。
+本机开发：`.\scripts\db-tunnel.ps1` 后 `npm run dev`（库在服务器，勿用本地 Docker Postgres）。
 
 与服务器关系：**同源代码，独立 `.env` 与数据库**；不要假设本机改动能自动同步到 192.168.1.14。

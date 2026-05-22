@@ -1,19 +1,16 @@
-services:
-  db:
-    image: postgres:16-alpine
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: community
-      POSTGRES_PASSWORD: community
-      POSTGRES_DB: community
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U community -d community"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  pgdata:
+# 已弃用：PostgreSQL 仅部署在服务器 192.168.1.14，本机请用 scripts/db-tunnel.ps1 连接。
+# 若仍需离线本地库，可取消下方注释后 docker compose up -d。
+#
+# services:
+#   db:
+#     image: postgres:16-alpine
+#     ports:
+#       - "5432:5432"
+#     environment:
+#       POSTGRES_USER: community
+#       POSTGRES_PASSWORD: community
+#       POSTGRES_DB: community
+#     volumes:
+#       - pgdata:/var/lib/postgresql/data
+# volumes:
+#   pgdata:

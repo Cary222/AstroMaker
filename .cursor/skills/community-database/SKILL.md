@@ -14,7 +14,7 @@ description: PostgreSQL and Prisma schema for the community app—tables, relati
 | [`prisma/seed.ts`](../../../prisma/seed.ts) | 分类种子 |
 | [`prisma/promote-admin.ts`](../../../prisma/promote-admin.ts) | 提升 ADMIN |
 
-本地 Docker 开发：[`docker-compose.yml`](../../../docker-compose.yml) + `.env` 中 `DATABASE_URL`。
+本地开发：先 [`scripts/db-tunnel.ps1`](../../../scripts/db-tunnel.ps1)，`.env` 中 `DATABASE_URL` 指向 `127.0.0.1:5432`（隧道到服务器）。
 
 ## 连接
 
@@ -37,7 +37,7 @@ SSH 后所有 Prisma 命令在应用目录执行。应用启停见 skill **`comm
 DATABASE_URL="postgresql://community:community@localhost:5432/community?schema=public"
 ```
 
-`docker compose up -d` 后 `npm run db:migrate`。
+`.\scripts\db-tunnel.ps1` 后 `npm run db:migrate`。
 
 ## 模型总览
 
