@@ -3,12 +3,14 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { loginAction, type LoginState } from "@/actions/login";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const initialState: LoginState = {};
 
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null;
-  return <p className="mt-1 text-sm text-red-400">{messages[0]}</p>;
+  return <p className="mt-1 text-sm text-destructive">{messages[0]}</p>;
 }
 
 export function LoginForm({ registered }: { registered?: boolean }) {
@@ -17,52 +19,47 @@ export function LoginForm({ registered }: { registered?: boolean }) {
   return (
     <form action={formAction} className="space-y-4">
       {registered && (
-        <p className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
+        <p className="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
           注册成功，请登录。
         </p>
       )}
 
-      <div>
-        <label htmlFor="email" className="mb-1 block text-sm text-muted">
+      <div className="space-y-2">
+        <label htmlFor="email" className="text-sm font-medium">
           邮箱
         </label>
-        <input
+        <Input
           id="email"
           name="email"
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-foreground outline-none focus:border-accent"
+          placeholder="your@email.com"
         />
         <FieldError messages={state.errors?.email} />
       </div>
 
-      <div>
-        <label htmlFor="password" className="mb-1 block text-sm text-muted">
+      <div className="space-y-2">
+        <label htmlFor="password" className="text-sm font-medium">
           密码
         </label>
-        <input
+        <Input
           id="password"
           name="password"
           type="password"
           required
           autoComplete="current-password"
-          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-foreground outline-none focus:border-accent"
         />
         <FieldError messages={state.errors?.password} />
       </div>
 
       <FieldError messages={state.errors?._form} />
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-lg bg-accent py-2.5 font-medium text-white hover:opacity-90 disabled:opacity-50"
-      >
+      <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "登录中…" : "登录"}
-      </button>
+      </Button>
 
-      <p className="text-center text-sm text-muted">
+      <p className="text-center text-sm text-muted-foreground">
         还没有账号？{" "}
         <Link href="/register" className="text-accent hover:underline">
           注册

@@ -1,19 +1,15 @@
 import { deletePostAction } from "@/actions/moderation";
+import { Button } from "@/components/ui/button";
 
 export function DeletePostButton({ postId }: { postId: string }) {
   return (
-    <form
-      action={async () => {
-        "use server";
-        await deletePostAction(postId);
-      }}
-    >
-      <button
-        type="submit"
-        className="text-sm text-red-400 hover:text-red-300"
-      >
+    <form action={async () => {
+      "use server";
+      await deletePostAction(postId);
+    }}>
+      <Button variant="destructive" size="sm" type="submit">
         删除帖子
-      </button>
+      </Button>
     </form>
   );
 }

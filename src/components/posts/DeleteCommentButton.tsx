@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { deleteCommentAction } from "@/actions/moderation";
+import { Button } from "@/components/ui/button";
 
 export function DeleteCommentButton({
   commentId,
@@ -13,17 +14,18 @@ export function DeleteCommentButton({
   const [pending, startTransition] = useTransition();
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="sm"
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
           await deleteCommentAction(commentId, postSlug);
         })
       }
-      className="mt-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
+      className="mt-1 h-auto text-xs text-destructive hover:text-destructive"
     >
       {pending ? "删除中…" : "删除"}
-    </button>
+    </Button>
   );
 }

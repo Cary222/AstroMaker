@@ -28,13 +28,13 @@ export async function loginAction(
 
   const { email, password } = parsed.data;
 
-  const result = await signIn("credentials", {
-    email,
-    password,
-    redirect: false,
-  });
-
-  if (result?.error) {
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+  } catch (error) {
     return { errors: { _form: ["邮箱或密码错误"] } };
   }
 

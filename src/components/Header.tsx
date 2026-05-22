@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 import { isModerator } from "@/lib/permissions";
 
 export async function Header() {
@@ -12,35 +14,33 @@ export async function Header() {
         <Link href="/" className="text-lg font-semibold text-foreground">
           社区
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex items-center gap-2">
           {session?.user ? (
             <>
-              <Link href="/posts/new" className="text-muted hover:text-foreground">
-                发帖
-              </Link>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/posts/new">发帖</Link>
+              </Button>
               {isModerator(session.user.role) && (
-                <Link href="/admin" className="text-muted hover:text-foreground">
-                  管理
-                </Link>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/admin">管理</Link>
+                </Button>
               )}
-              <span className="text-muted">
+              <span className="px-2 text-sm text-muted-foreground">
                 {session.user.name ?? session.user.email}
               </span>
               <SignOutButton />
             </>
           ) : (
             <>
-              <Link href="/login" className="text-muted hover:text-foreground">
-                登录
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-full bg-accent px-4 py-1.5 font-medium text-white hover:opacity-90"
-              >
-                注册
-              </Link>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login">登录</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/register">注册</Link>
+              </Button>
             </>
           )}
+          <ThemeToggle />
         </nav>
       </div>
     </header>

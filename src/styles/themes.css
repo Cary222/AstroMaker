@@ -1,0 +1,97 @@
+/**
+ * 主题系统规范文件
+ *
+ * 使用方法：在 HTML 根元素上设置 data-theme 属性
+ *   <html data-theme="dark">  或  <html data-theme="light">
+ *
+ * CSS 变量命名规范：
+ *   --color-{语义名}: 用于所有颜色
+ *   --{语义名} 的简写形式供内部使用
+ *
+ * 扩展主题：添加新的 [data-theme="xxx"] 块即可
+ */
+
+/* ============================================
+   暗色主题（默认）
+   ============================================ */
+[data-theme="dark"],
+:root:not([data-theme]) {
+  /* 主色调 */
+  --color-background: #0f1419;
+  --color-foreground: #e7e9ea;
+  --color-muted: #8b98a5;
+
+  /* 强调色 */
+  --color-accent: #1d9bf0;
+  --color-accent-hover: #1a8cd8;
+
+  /* 卡片与边框 */
+  --color-card: #16181c;
+  --color-card-hover: #1d1f23;
+  --color-border: #2f3336;
+
+  /* 功能色 */
+  --color-destructive: #f4212e;
+  --color-success: #00ba7c;
+  --color-warning: #ffad1f;
+
+  /* 输入框 */
+  --color-input-bg: #202327;
+  --color-input-border: #2f3336;
+
+  /* 遮罩 */
+  --color-overlay: rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   亮色主题
+   ============================================ */
+[data-theme="light"] {
+  /* 主色调 */
+  --color-background: #ffffff;
+  --color-foreground: #0f1419;
+  --color-muted: #536471;
+
+  /* 强调色 */
+  --color-accent: #1d9bf0;
+  --color-accent-hover: #1a8cd8;
+
+  /* 卡片与边框 */
+  --color-card: #f7f9f9;
+  --color-card-hover: #eff3f4;
+  --color-border: #eff3f4;
+
+  /* 功能色 */
+  --color-destructive: #f4212e;
+  --color-success: #00ba7c;
+  --color-warning: #ffad1f;
+
+  /* 输入框 */
+  --color-input-bg: #f7f9f9;
+  --color-input-border: #cfd9de;
+
+  /* 遮罩 */
+  --color-overlay: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   Tailwind CSS v4 变量映射
+   ============================================ */
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-muted: var(--color-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-card: var(--color-card);
+  --color-card-hover: var(--color-card-hover);
+  --color-border: var(--color-border);
+  --color-destructive: var(--color-destructive);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-input-bg: var(--color-input-bg);
+  --color-input-border: var(--color-input-border);
+  --color-overlay: var(--color-overlay);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}

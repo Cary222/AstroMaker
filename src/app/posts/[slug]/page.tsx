@@ -3,17 +3,11 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getPostBySlug } from "@/lib/posts";
 import { normalizePostSlug } from "@/lib/slug";
+import { formatDate } from "@/lib/date";
 import { MarkdownBody } from "@/components/posts/MarkdownBody";
 import { CommentSection } from "@/components/posts/CommentSection";
 import { DeletePostButton } from "@/components/posts/DeletePostButton";
 import { canDeletePost } from "@/lib/permissions";
-
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    dateStyle: "long",
-    timeStyle: "short",
-  }).format(date);
-}
 
 export default async function PostPage({
   params,
@@ -42,7 +36,7 @@ export default async function PostPage({
           <span>{post.author.name ?? "匿名"}</span>
           <span>·</span>
           <time dateTime={post.createdAt.toISOString()}>
-            {formatDate(post.createdAt)}
+            {formatDate(post.createdAt, "long")}
           </time>
         </div>
         <div className="flex flex-wrap items-start justify-between gap-3">
