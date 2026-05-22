@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canDeleteComment, canDeletePost } from "@/lib/permissions";
+import { postPath } from "@/lib/slug";
 
 export async function deletePostAction(postId: string) {
   const session = await auth();
@@ -42,6 +43,6 @@ export async function deleteCommentAction(commentId: string, postSlug: string) {
   }
 
   await prisma.comment.delete({ where: { id: commentId } });
-  revalidatePath(`/posts/${postSlug}`);
+  revalidatePath(postPath(postSlug));
   return { success: true };
 }

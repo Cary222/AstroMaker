@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { postPath } from "@/lib/slug";
 import { createCommentSchema } from "@/lib/validations/post";
 
 export type CreateCommentState = {
@@ -58,6 +59,6 @@ export async function createCommentAction(
     },
   });
 
-  revalidatePath(`/posts/${post.slug}`);
+  revalidatePath(postPath(post.slug));
   return {};
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getAdminPosts } from "@/lib/posts";
+import { postPath } from "@/lib/slug";
 import { isModerator } from "@/lib/permissions";
 import { DeletePostButton } from "@/components/posts/DeletePostButton";
 
@@ -40,7 +41,7 @@ export default async function AdminPage() {
               >
                 <td className="px-4 py-3">
                   <Link
-                    href={`/posts/${post.slug}`}
+                    href={postPath(post.slug)}
                     className="hover:text-accent"
                   >
                     {post.title}

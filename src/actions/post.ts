@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { slugify } from "@/lib/slug";
+import { postPath, slugify } from "@/lib/slug";
 import { ensureUniqueSlug } from "@/lib/posts";
 import { createPostSchema } from "@/lib/validations/post";
 
@@ -49,5 +49,5 @@ export async function createPostAction(
     },
   });
 
-  redirect(`/posts/${post.slug}`);
+  redirect(postPath(post.slug));
 }

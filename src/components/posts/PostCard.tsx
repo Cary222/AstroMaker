@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { getLatestPosts } from "@/lib/posts";
+import { postPath } from "@/lib/slug";
 
 type Post = Awaited<ReturnType<typeof getLatestPosts>>[number];
 
@@ -28,7 +29,7 @@ export function PostCard({ post }: { post: Post }) {
         <span>{post._count.comments} 条评论</span>
       </div>
       <h2 className="text-lg font-semibold">
-        <Link href={`/posts/${post.slug}`} className="hover:text-accent">
+        <Link href={postPath(post.slug)} className="hover:text-accent">
           {post.title}
         </Link>
       </h2>

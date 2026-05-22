@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getPostBySlug } from "@/lib/posts";
+import { normalizePostSlug } from "@/lib/slug";
 import { MarkdownBody } from "@/components/posts/MarkdownBody";
 import { CommentSection } from "@/components/posts/CommentSection";
 import { DeletePostButton } from "@/components/posts/DeletePostButton";
@@ -19,7 +20,8 @@ export default async function PostPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  const { slug: slugParam } = await params;
+  const slug = normalizePostSlug(slugParam);
   const [post, session] = await Promise.all([getPostBySlug(slug), auth()]);
 
   if (!post) notFound();
