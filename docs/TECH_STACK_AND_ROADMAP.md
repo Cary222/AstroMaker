@@ -28,7 +28,7 @@
 | ORM | **Prisma** | 6.6 | 迁移、类型安全 Client、PostgreSQL 一等支持 |
 | 数据库 | **PostgreSQL** | 14（生产）/ 16（本地 Docker） | 关系型、后续全文检索 / 通知表扩展方便 |
 | Markdown | **react-markdown** + **rehype-sanitize** | 10 / 6 | 发帖正文渲染且防 XSS |
-| 本地 DB | **Docker Compose** | postgres:16-alpine | 一条命令起库，与生产逻辑一致 |
+| 本地 DB | **无**（仅服务器 PostgreSQL） | SSH 隧道 `scripts/db-tunnel.ps1` | 开发与生产共用 192.168.1.14 上的库 |
 | 生产运行时 | **Node.js** + **systemd**（用户服务） | 22.x | 服务器已部署，无 Docker 跑应用 |
 | 代码托管 | **Git**（仅本地仓库） | — | 作者 freeeeeG \<1284566797@qq.com\>，未推远端 |
 

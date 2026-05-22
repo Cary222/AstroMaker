@@ -5,7 +5,7 @@
 ## 前置要求
 
 - Node.js 18+
-- Docker Desktop（本地 PostgreSQL；未安装时需自行提供可访问的 PostgreSQL 并修改 `DATABASE_URL`）
+- 可 SSH 到 `hxy@192.168.1.14`（PostgreSQL **仅在服务器**，本机经隧道连接）
 
 ## 快速开始
 
@@ -17,8 +17,9 @@ npm install
 cp .env.example .env
 # 编辑 .env，设置 AUTH_SECRET（可用: openssl rand -base64 32）
 
-# 3. 启动数据库
-docker compose up -d
+# 3. 连接服务器数据库
+# 局域网内（已执行服务器 sudo bash deploy/enable-lan-access.sh）可直接用 .env.example 中的 192.168.1.14
+# 否则先运行: .\scripts\db-tunnel.ps1 ，并把 DATABASE_URL  host 改为 127.0.0.1
 
 # 4. 数据库迁移
 npm run db:migrate
@@ -75,6 +76,11 @@ npm run dev
 ```
 
 本机 `lint` + `build` 通过后 push 到 `origin`，服务器自动部署。详见 [`docs/CICD.md`](docs/CICD.md)。
+
+## 局域网访问
+
+- 站点：http://192.168.1.14:3000（同网段可直接用）
+- 数据库对 LAN 开放：见 [`docs/LAN_ACCESS.md`](docs/LAN_ACCESS.md)
 
 ## 远程服务器（192.168.1.14）
 

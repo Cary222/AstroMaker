@@ -1,14 +1,10 @@
-# 本地环境一键初始化（需已安装 Docker Desktop 与 Node.js）
+# 本地环境初始化（数据库在服务器，经 SSH 隧道连接）
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot\..
 
-Write-Host ">> 启动 PostgreSQL..."
-docker compose up -d
+& "$PSScriptRoot\db-tunnel.ps1"
 
-Write-Host ">> 等待数据库就绪..."
-Start-Sleep -Seconds 5
-
-Write-Host ">> 执行数据库迁移..."
+Write-Host ">> 执行数据库迁移（连接服务器库）..."
 npm run db:migrate
 
 Write-Host ">> 种子分类数据..."

@@ -59,7 +59,7 @@ sequenceDiagram
 | **3000** | `127.0.0.1` | Next.js 生产进程（`community.service`），仅本机 / hook 探测 |
 | **8080** | `0.0.0.0` | 外放访问（`community-proxy.service` → `deploy/port-proxy.mjs`） |
 
-局域网访问：**http://192.168.1.14:8080**（`AUTH_URL` 须与外放端口一致）。
+局域网访问：**http://192.168.1.14:3000**。数据库对 LAN 开放见 [`docs/LAN_ACCESS.md`](LAN_ACCESS.md)。
 
 配置：[`deploy/ports.env`](../deploy/ports.env)。首次或改端口后：
 
