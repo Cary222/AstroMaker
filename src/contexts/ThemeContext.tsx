@@ -42,26 +42,20 @@ export function ThemeProvider({
   children: ReactNode;
   defaultTheme?: Theme;
 }) {
-  // 服务端默认值，客户端由 useEffect 同步
   const [theme, setThemeState] = useState<Theme>(defaultTheme ?? "dark");
 
-  // 客户端初始化：从内联脚本已设置的 data-theme 读取
   useEffect(() => {
     const dataTheme = document.documentElement.getAttribute("data-theme") as Theme | null;
     if (dataTheme && (dataTheme === "light" || dataTheme === "dark")) {
       setThemeState(dataTheme);
     } else {
-      // 兜底：设置系统偏好
       applyTheme(getSystemTheme());
     }
   }, []);
 
-  // 监听系统主题变化
   useEffect(() => {
     const mediaQuery = window.matchMedia(DARK_MEDIA_QUERY);
-
     const handleChange = (e: MediaQueryListEvent) => {
-      // 只有用户没有手动设置过主题时才跟随系统
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) {
         const newTheme = e.matches ? "dark" : "light";
@@ -69,7 +63,6 @@ export function ThemeProvider({
         applyTheme(newTheme);
       }
     };
-
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);

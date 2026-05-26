@@ -21,47 +21,51 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <article className="space-y-6">
-      <Link href="/" className="text-sm text-muted hover:text-accent">
-        ← 返回首页
-      </Link>
+    <div className="page-grid">
+      <div className="col-center">
+        <article className="space-y-6">
+          <Link href="/" className="text-sm text-muted hover:text-accent">
+            ← 返回首页
+          </Link>
 
-      <header className="rounded-2xl border border-border bg-card p-6">
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted">
-          {post.category && (
-            <span className="rounded-full bg-background px-2 py-0.5">
-              {post.category.name}
-            </span>
-          )}
-          <span>{post.author.name ?? "匿名"}</span>
-          <span>·</span>
-          <time dateTime={post.createdAt.toISOString()}>
-            {formatDate(post.createdAt, "long")}
-          </time>
-        </div>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="text-2xl font-bold">{post.title}</h1>
-          {session?.user &&
-            canDeletePost(
-              session.user.role,
-              session.user.id,
-              post.authorId,
-            ) && <DeletePostButton postId={post.id} />}
-        </div>
-      </header>
+          <header className="rounded-2xl border border-border bg-card p-6">
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted">
+              {post.category && (
+                <span className="rounded-full bg-background px-2 py-0.5">
+                  {post.category.name}
+                </span>
+              )}
+              <span>{post.author.name ?? "匿名"}</span>
+              <span>·</span>
+              <time dateTime={post.createdAt.toISOString()}>
+                {formatDate(post.createdAt, "long")}
+              </time>
+            </div>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <h1 className="text-2xl font-bold">{post.title}</h1>
+              {session?.user &&
+                canDeletePost(
+                  session.user.role,
+                  session.user.id,
+                  post.authorId,
+                ) && <DeletePostButton postId={post.id} />}
+            </div>
+          </header>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <MarkdownBody content={post.body} />
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <MarkdownBody content={post.body} />
+          </div>
+
+          <CommentSection
+            postId={post.id}
+            postSlug={post.slug}
+            comments={post.comments}
+            isLoggedIn={!!session?.user}
+            currentUserId={session?.user?.id}
+            userRole={session?.user?.role}
+          />
+        </article>
       </div>
-
-      <CommentSection
-        postId={post.id}
-        postSlug={post.slug}
-        comments={post.comments}
-        isLoggedIn={!!session?.user}
-        currentUserId={session?.user?.id}
-        userRole={session?.user?.role}
-      />
-    </article>
+    </div>
   );
 }

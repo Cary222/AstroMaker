@@ -12,10 +12,12 @@ export default async function NewPostPage() {
   const categories = await getCategories();
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="mb-2 text-2xl font-bold">发布帖子</h1>
-      <p className="mb-6 text-muted">支持 Markdown 格式正文。</p>
-      <CreatePostForm categories={categories} />
+    <div className="page-grid">
+      <div className="col-center">
+        <h1 className="mb-2 text-2xl font-bold">发布帖子</h1>
+        <p className="mb-6 text-muted">支持 Markdown 格式正文。</p>
+        <CreatePostForm categories={categories} />
+      </div>
     </div>
   );
 }

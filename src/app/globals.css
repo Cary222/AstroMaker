@@ -37,6 +37,211 @@ body {
 }
 
 /* ============================================
+   三栏页面布局 (page-grid)
+   ============================================ */
+.page-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px minmax(300px, 1fr) 288px;
+  grid-template-areas: "left center right";
+  grid-template-rows: minmax(0, 1fr);
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 16px;
+  align-items: start;
+}
+
+.page-grid > .col-left   { grid-area: left;   padding-right: 16px; }
+.page-grid > .col-center { grid-area: center; min-width: 0; padding: 0 16px; }
+.page-grid > .col-right  { grid-area: right;  padding-left: 16px; }
+
+/* 平板（768px - 1023px）：中 + 右两栏，左栏隐藏 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .page-grid {
+    grid-template-columns: 1fr 288px;
+    grid-template-areas: "center right";
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .page-grid > .col-left  { display: none; }
+  .page-grid > .col-center { padding: 0; }
+}
+
+/* 移动端（< 768px）：单列居中，左右栏隐藏 */
+@media (max-width: 767px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "center";
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .page-grid > .col-left,
+  .page-grid > .col-right { display: none; }
+  .page-grid > .col-center { padding: 0; }
+}
+
+/* ============================================
+   侧边栏通用卡片样式
+   ============================================ */
+.sidebar-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.sidebar-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 12px;
+}
+
+/* ============================================
+   PostItem 帖子卡片
+   ============================================ */
+.post-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s;
+}
+
+.post-item:hover {
+  background: var(--color-card-hover);
+}
+
+.post-item-avatar-col {
+  flex-shrink: 0;
+}
+
+.post-item-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  object-fit: cover;
+  background: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+  overflow: hidden;
+}
+
+.post-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 4px;
+}
+
+.post-item-author-name {
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+
+.post-item-author-handle {
+  color: var(--color-muted);
+}
+
+.post-item-time {
+  color: var(--color-muted);
+}
+
+.post-item-content {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-foreground);
+  word-break: break-word;
+}
+
+.post-item-content.collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-item-expand {
+  font-size: 0.875rem;
+  color: var(--color-accent);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 4px;
+}
+
+.post-item-expand:hover {
+  text-decoration: underline;
+}
+
+.post-item-images {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  margin-top: 10px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.post-item-images img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.post-item-images.cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.post-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 12px;
+}
+
+.post-item-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  justify-content: center;
+  padding: 6px 0;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.post-item-action-btn:hover {
+  background: var(--color-input-bg);
+}
+
+.post-item-action-btn.liked {
+  color: #f4212e;
+}
+
+.post-item-action-btn.liked:hover {
+  background: rgba(244, 33, 46, 0.1);
+}
+
+/* ============================================
    Markdown 渲染样式
    ============================================ */
 .markdown h1,

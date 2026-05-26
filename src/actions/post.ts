@@ -39,6 +39,12 @@ export async function createPostAction(
   const { title, body, categoryId } = parsed.data;
   const slug = await ensureUniqueSlug(slugify(title));
 
+  // 支持多图（未来扩展：图片上传后可传入 images 参数）
+  const rawImages = formData.get("images");
+  const images: string[] = rawImages
+    ? JSON.parse(rawImages as string)
+    : [];
+
   const post = await prisma.post.create({
     data: {
       title,
@@ -46,6 +52,7 @@ export async function createPostAction(
       slug,
       authorId: session.user.id,
       categoryId: categoryId || null,
+      images,
     },
   });
 

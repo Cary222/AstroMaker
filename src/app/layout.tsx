@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import "./globals.css";
 
@@ -46,11 +47,12 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col antialiased`}
       >
         <ThemeProvider>
           <Header />
-          <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
+          <main className="flex flex-1 flex-col">{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
