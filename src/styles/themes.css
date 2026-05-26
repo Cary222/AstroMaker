@@ -1,77 +1,100 @@
 /**
- * 主题系统规范文件
+ * 主题系统规范文件 - AstroMaker 设计规范
  *
  * 使用方法：在 HTML 根元素上设置 data-theme 属性
  *   <html data-theme="dark">  或  <html data-theme="light">
  *
- * CSS 变量命名规范：
- *   --color-{语义名}: 用于所有颜色
- *   --{语义名} 的简写形式供内部使用
- *
- * 扩展主题：添加新的 [data-theme="xxx"] 块即可
+ * 设计规范：
+ *   主色调：蓝色系 #1677ff / #2563eb
+ *   辅色：紫蓝、橙黄高亮
+ *   风格：简洁现代，科技感，天文主题
  */
 
 /* ============================================
-   暗色主题（默认）
+   亮色主题（默认，AstroMaker 主风格）
    ============================================ */
-[data-theme="dark"],
+[data-theme="light"],
 :root:not([data-theme]) {
   /* 主色调 */
-  --color-background: #0f1419;
-  --color-foreground: #e7e9ea;
-  --color-muted: #8b98a5;
+  --color-background: #f5f7fa;
+  --color-foreground: #1a1a2e;
+  --color-muted: #6b7280;
 
-  /* 强调色 */
-  --color-accent: #1d9bf0;
-  --color-accent-hover: #1a8cd8;
+  /* 强调色 - AstroMaker 蓝 */
+  --color-accent: #1677ff;
+  --color-accent-hover: #0958d9;
+  --color-accent-light: #e8f0fe;
 
   /* 卡片与边框 */
-  --color-card: #16181c;
-  --color-card-hover: #1d1f23;
-  --color-border: #2f3336;
+  --color-card: #ffffff;
+  --color-card-hover: #f0f4ff;
+  --color-border: #e5e9f0;
+  --color-border-light: #f0f2f5;
 
   /* 功能色 */
-  --color-destructive: #f4212e;
-  --color-success: #00ba7c;
-  --color-warning: #ffad1f;
+  --color-destructive: #ff4d4f;
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-purple: #722ed1;
+  --color-orange: #fa8c16;
 
   /* 输入框 */
-  --color-input-bg: #202327;
-  --color-input-border: #2f3336;
+  --color-input-bg: #f5f7fa;
+  --color-input-border: #d9e0ed;
+
+  /* 导航高亮背景 */
+  --color-nav-active-bg: #e8f0fe;
+  --color-nav-active-text: #1677ff;
 
   /* 遮罩 */
-  --color-overlay: rgba(0, 0, 0, 0.5);
+  --color-overlay: rgba(0, 0, 0, 0.45);
+
+  /* 阴影 */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 4px 16px rgba(22, 119, 255, 0.12);
 }
 
 /* ============================================
-   亮色主题
+   暗色主题
    ============================================ */
-[data-theme="light"] {
+[data-theme="dark"] {
   /* 主色调 */
-  --color-background: #ffffff;
-  --color-foreground: #0f1419;
-  --color-muted: #536471;
+  --color-background: #0d1117;
+  --color-foreground: #e6edf3;
+  --color-muted: #7d8590;
 
   /* 强调色 */
-  --color-accent: #1d9bf0;
-  --color-accent-hover: #1a8cd8;
+  --color-accent: #4493f8;
+  --color-accent-hover: #2f81f7;
+  --color-accent-light: #1c2a3a;
 
   /* 卡片与边框 */
-  --color-card: #f7f9f9;
-  --color-card-hover: #eff3f4;
-  --color-border: #eff3f4;
+  --color-card: #161b22;
+  --color-card-hover: #1c2128;
+  --color-border: #30363d;
+  --color-border-light: #21262d;
 
   /* 功能色 */
-  --color-destructive: #f4212e;
-  --color-success: #00ba7c;
-  --color-warning: #ffad1f;
+  --color-destructive: #f85149;
+  --color-success: #3fb950;
+  --color-warning: #d29922;
+  --color-purple: #bc8cff;
+  --color-orange: #ffa657;
 
   /* 输入框 */
-  --color-input-bg: #f7f9f9;
-  --color-input-border: #cfd9de;
+  --color-input-bg: #0d1117;
+  --color-input-border: #30363d;
+
+  /* 导航高亮背景 */
+  --color-nav-active-bg: #1c2a3a;
+  --color-nav-active-text: #4493f8;
 
   /* 遮罩 */
-  --color-overlay: rgba(255, 255, 255, 0.5);
+  --color-overlay: rgba(0, 0, 0, 0.7);
+
+  /* 阴影 */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 16px rgba(68, 147, 248, 0.15);
 }
 
 /* ============================================
@@ -83,14 +106,20 @@
   --color-muted: var(--color-muted);
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
+  --color-accent-light: var(--color-accent-light);
   --color-card: var(--color-card);
   --color-card-hover: var(--color-card-hover);
   --color-border: var(--color-border);
+  --color-border-light: var(--color-border-light);
   --color-destructive: var(--color-destructive);
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
+  --color-purple: var(--color-purple);
+  --color-orange: var(--color-orange);
   --color-input-bg: var(--color-input-bg);
   --color-input-border: var(--color-input-border);
+  --color-nav-active-bg: var(--color-nav-active-bg);
+  --color-nav-active-text: var(--color-nav-active-text);
   --color-overlay: var(--color-overlay);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

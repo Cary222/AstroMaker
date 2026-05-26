@@ -26,10 +26,20 @@ type FeedProps = {
 
 export function Feed({ posts }: FeedProps) {
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div>
       {posts.length === 0 ? (
-        <div className="p-10 text-center text-muted-foreground">
-          暂无帖子，去发一条吧
+        <div style={{
+          padding: "48px 24px",
+          textAlign: "center",
+          color: "var(--color-muted)",
+        }}>
+          <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🔭</div>
+          <div style={{ fontSize: "0.9375rem", fontWeight: 600, marginBottom: 6, color: "var(--color-foreground)" }}>
+            暂无帖子
+          </div>
+          <div style={{ fontSize: "0.875rem" }}>
+            成为第一个发帖的星空探索者吧！
+          </div>
         </div>
       ) : (
         posts.map((post) => <PostItem key={post.id} post={post} />)
