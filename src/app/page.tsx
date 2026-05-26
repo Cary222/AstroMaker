@@ -1,5 +1,4 @@
 import { auth } from "@/lib/auth";
-import type { Session } from "next-auth";
 import { getHotTopics } from "@/actions/topic";
 import { getLatestPosts } from "@/lib/posts";
 import { LeftColumn } from "@/components/layout/LeftColumn";

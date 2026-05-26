@@ -16,23 +16,32 @@ export function HotTopicsPanel({ topics }: HotTopicsPanelProps) {
 
   return (
     <div className="sidebar-card">
-      <div className="sidebar-card-title flex items-center gap-2">
-        <img src="/images/trending-icon.svg" alt="Trending" className="h-5 w-5" />
-        热门话题
+      <div className="section-header">
+        <div className="sidebar-card-title" style={{ marginBottom: 0 }}>
+          <FlameIcon />
+          热门讨论
+        </div>
+        <Link href="/?section=hot" className="section-more">更多</Link>
       </div>
-      <div className="space-y-3">
-        {list.map((topic) => (
+      <div>
+        {list.map((topic, index) => (
           <Link
             key={topic.id}
             href={`/?topic=${topic.slug}`}
-            className="block group"
+            className="hot-topic-item"
           >
-            <div className="text-sm font-medium text-foreground group-hover:text-accent">
-              {topic.name}
+            <span className={`hot-topic-rank ${
+              index === 0 ? "rank-1" :
+              index === 1 ? "rank-2" :
+              index === 2 ? "rank-3" : "rank-other"
+            }`}>
+              {index + 1}
+            </span>
+            <div className="hot-topic-info">
+              <div className="hot-topic-name">{topic.name}</div>
+              <div className="hot-topic-count">{formatCount(topic.posts)} 帖子</div>
             </div>
-            <div className="text-xs text-muted-foreground">
-              {topic.posts} 帖子
-            </div>
+            {index < 3 && <span className="hot-badge">HOT</span>}
           </Link>
         ))}
       </div>
@@ -40,10 +49,24 @@ export function HotTopicsPanel({ topics }: HotTopicsPanelProps) {
   );
 }
 
+function formatCount(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1) + "k";
+  return String(n);
+}
+
+function FlameIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/>
+    </svg>
+  );
+}
+
 const MOCK_TOPICS = [
-  { id: "1", name: "#Next.js 15 发布#", slug: "nextjs-15", posts: 234 },
-  { id: "2", name: "#React 19 新特性#", slug: "react-19", posts: 189 },
-  { id: "3", name: "#TypeScript 技巧#", slug: "typescript", posts: 156 },
-  { id: "4", name: "#Tailwind CSS#", slug: "tailwind-css", posts: 98 },
-  { id: "5", name: "#AI 开发工具#", slug: "ai-tools", posts: 77 },
+  { id: "1", name: "我的 3D 打印赤道仪支架改造", slug: "3d-equatorial", posts: 1200 },
+  { id: "2", name: "大家的星空滤镜怎么选？", slug: "star-filter", posts: 886 },
+  { id: "3", name: "ASIAIR Pro 和 NINA 选哪个好？", slug: "asiair-nina", posts: 542 },
+  { id: "4", name: "天空背景蓝色的秘密", slug: "sky-blue", posts: 430 },
+  { id: "5", name: "新手入门设备搭配建议", slug: "beginner-gear", posts: 388 },
+  { id: "6", name: "拍摄马头云雾的极限分享", slug: "horsehead-nebula", posts: 256 },
 ];

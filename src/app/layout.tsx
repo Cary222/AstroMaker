@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "社区",
-  description: "基于 Next.js 与 PostgreSQL 的社区",
+  title: "AstroMaker 天文社区",
+  description: "AstroMaker —— 面向天文爱好者与创作者的交流、分享、协作社区",
 };
 
 export default function RootLayout({

@@ -31,7 +31,24 @@ type PostItemProps = {
 
 export function PostItem({ post }: PostItemProps) {
   const [expanded, setExpanded] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likes);
+  const [bookmarked, setBookmarked] = useState(false);
   const isLong = post.body.length > 280;
+
+  const displayImages = post.images?.slice(0, 3) ?? [];
+  const extraCount = (post.images?.length ?? 0) - 3;
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setLiked(!liked);
+    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+  };
+
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setBookmarked(!bookmarked);
+  };
 
   return (
     <article className="post-item">
@@ -44,7 +61,7 @@ export function PostItem({ post }: PostItemProps) {
               <img
                 src={post.author.image}
                 alt={post.author.name ?? "用户"}
-                className="post-item-avatar"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             ) : (
               <span>
@@ -57,21 +74,56 @@ export function PostItem({ post }: PostItemProps) {
 
       {/* 右侧内容区 */}
       <div className="post-item-body">
-        {/* 作者信息 */}
+        {/* 作者信息行 */}
         <div className="post-item-meta">
-          <span className="post-item-author-name">
-            {post.author.name ?? "匿名用户"}
+          <Link href={`/u/${post.author.id}`} style={{ textDecoration: "none" }}>
+            <span className="post-item-author-name">
+              {post.author.name ?? "匿名用户"}
+            </span>
+          </Link>
+          <span className="post-item-badge">作者</span>
+          <span className="post-item-author-handle">
+            @{(post.author.name ?? "anonymous").toLowerCase().replace(/\s+/g, "_")}
           </span>
-          <span className="post-item-author-handle">@{(post.author.name ?? "anonymous").toLowerCase().replace(/\s+/g, "_")}</span>
-          <span>·</span>
+          <span style={{ color: "var(--color-border)" }}>·</span>
           <time className="post-item-time" dateTime={post.createdAt.toISOString()}>
             {formatDate(post.createdAt)}
           </time>
+          {/* 右侧分享按钮 */}
+          <div style={{ marginLeft: "auto" }}>
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--color-muted)",
+                padding: "2px 4px",
+                borderRadius: 4,
+                fontSize: "0.75rem",
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+              }}
+            >
+              <ShareIcon />
+              作品分享
+            </button>
+          </div>
         </div>
 
         {/* 帖子标题 */}
-        <Link href={postPath(post.slug)}>
-          <h2 className="mb-2 text-base font-semibold text-foreground hover:text-accent">
+        <Link href={postPath(post.slug)} style={{ textDecoration: "none" }}>
+          <h2 style={{
+            marginBottom: 6,
+            fontSize: "1rem",
+            fontWeight: 700,
+            color: "var(--color-foreground)",
+            lineHeight: 1.45,
+            transition: "color 0.15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-accent)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-foreground)")}
+          >
             {post.title}
           </h2>
         </Link>
@@ -90,32 +142,59 @@ export function PostItem({ post }: PostItemProps) {
         )}
 
         {/* 图片网格 */}
-        {post.images && post.images.length > 0 && (
-          <div className={`post-item-images${post.images.length === 1 ? " cols-1" : ""}`}>
-            {post.images.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={src} alt={`图片 ${i + 1}`} />
-            ))}
+        {displayImages.length > 0 && (
+          <div className={`post-item-images${
+            displayImages.length === 1 ? " cols-1" :
+            displayImages.length === 2 ? " cols-2" : ""
+          }`}>
+            {displayImages.map((src, i) => {
+              const isLast = i === 2 && extraCount > 0;
+              return (
+                <div key={i} className={isLast ? "post-item-image-more" : ""}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={`图片 ${i + 1}`} />
+                  {isLast && (
+                    <div className="post-item-image-more-overlay">
+                      +{extraCount}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
         {/* 互动栏 */}
         <div className="post-item-actions">
+          {/* 评论 */}
           <Link href={postPath(post.slug)} className="post-item-action-btn">
             <CommentIcon />
-            <span>{post._count.comments}</span>
+            <span>{post._count.comments || ""}</span>
           </Link>
+          {/* 转发 */}
           <button className="post-item-action-btn">
             <RepostIcon />
-            <span>{post.reposts}</span>
+            <span>{post.reposts || ""}</span>
           </button>
-          <button className="post-item-action-btn">
-            <HeartIcon />
-            <span>{post.likes}</span>
+          {/* 点赞 */}
+          <button
+            className={`post-item-action-btn${liked ? " liked" : ""}`}
+            onClick={handleLike}
+          >
+            <HeartIcon filled={liked} />
+            <span>{likeCount || ""}</span>
           </button>
+          {/* 浏览量 */}
           <button className="post-item-action-btn">
             <EyeIcon />
-            <span>{post.views}</span>
+            <span>{post.views || ""}</span>
+          </button>
+          {/* 收藏 */}
+          <button
+            className={`post-item-action-btn${bookmarked ? " bookmarked" : ""}`}
+            onClick={handleBookmark}
+          >
+            <BookmarkIcon filled={bookmarked} />
           </button>
         </div>
       </div>
@@ -125,7 +204,7 @@ export function PostItem({ post }: PostItemProps) {
 
 function CommentIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
     </svg>
   );
@@ -133,7 +212,7 @@ function CommentIcon() {
 
 function RepostIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="17,1 21,5 17,9" />
       <path d="M3 11V9a4 4 0 014-4h14" />
       <polyline points="7,23 3,19 7,15" />
@@ -142,9 +221,9 @@ function RepostIcon() {
   );
 }
 
-function HeartIcon() {
+function HeartIcon({ filled }: { filled?: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
     </svg>
   );
@@ -152,9 +231,29 @@ function HeartIcon() {
 
 function EyeIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function BookmarkIcon({ filled }: { filled?: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"/>
+      <circle cx="6" cy="12" r="3"/>
+      <circle cx="18" cy="19" r="3"/>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
     </svg>
   );
 }
