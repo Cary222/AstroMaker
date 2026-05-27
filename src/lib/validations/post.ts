@@ -4,6 +4,7 @@ export const createPostSchema = z.object({
   title: z.string().min(1, "请输入标题").max(200, "标题过长"),
   body: z.string().min(1, "请输入正文").max(50000, "正文过长"),
   categoryId: z.string().optional(),
+  tags: z.string().optional(), // comma-separated tag names
   images: z.string().optional(), // JSON string array
 });
 

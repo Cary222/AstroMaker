@@ -1,18 +1,33 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
+import GitHub from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { loginSchema } from "@/lib/validations/auth";
 
+class AccountBannedError extends CredentialsSignin {
+  constructor() {
+    super("账号已被封禁，请联系管理员");
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  // Credentials 需 JWT 会话；二期 OAuth 可继续用同一 adapter
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
   },
   providers: [
+    // GitHub OAuth (需要配置 AUTH_GITHUB_ID 和 AUTH_GITHUB_SECRET 环境变量)
+    ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
+      ? [
+          GitHub({
+            clientId: process.env.AUTH_GITHUB_ID,
+            clientSecret: process.env.AUTH_GITHUB_SECRET,
+          }),
+        ]
+      : []),
     Credentials({
       name: "credentials",
       credentials: {
@@ -26,6 +41,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const { email, password } = parsed.data;
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.passwordHash) return null;
+
+        if (user.bannedAt) throw new AccountBannedError();
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
@@ -41,14 +58,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;
         token.role = user.role;
+      } else if (token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub as string },
+          select: { bannedAt: true },
+        });
+        if (dbUser?.bannedAt) {
+          token.banned = true;
+        }
       }
       return token;
     },
-    session({ session, token }) {
+    async session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
         session.user.role = token.role as typeof session.user.role;

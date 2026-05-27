@@ -15,11 +15,25 @@ type PostItemData = {
   reposts: number;
   createdAt: Date;
   images: string[];
+  pinned: boolean;
+  featured: boolean;
   author: {
     id: string;
     name: string | null;
     image: string | null;
   };
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  tags?: Array<{
+    topic: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  }>;
   _count: {
     comments: number;
   };
@@ -128,6 +142,44 @@ export function PostItem({ post }: PostItemProps) {
           </h2>
         </Link>
 
+        {/* 置顶/加精标记 */}
+        {(post.pinned || post.featured) && (
+          <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+            {post.pinned && (
+              <span style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                fontSize: "0.6875rem",
+                fontWeight: 600,
+                color: "#ff4d4f",
+                background: "rgba(255,77,79,0.1)",
+                padding: "1px 6px",
+                borderRadius: 4,
+              }}>
+                <PinIcon />
+                置顶
+              </span>
+            )}
+            {post.featured && (
+              <span style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                fontSize: "0.6875rem",
+                fontWeight: 600,
+                color: "#fa8c16",
+                background: "rgba(250,140,22,0.1)",
+                padding: "1px 6px",
+                borderRadius: 4,
+              }}>
+                <StarSmallIcon />
+                加精
+              </span>
+            )}
+          </div>
+        )}
+
         {/* 帖子正文 */}
         <div className={`post-item-content${isLong && !expanded ? " collapsed" : ""}`}>
           {post.body}
@@ -161,6 +213,21 @@ export function PostItem({ post }: PostItemProps) {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* 标签列表 */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="post-item-tags">
+            {post.tags.map((tagItem) => (
+              <Link
+                key={tagItem.topic.id}
+                href={`/tags/${tagItem.topic.slug}`}
+                className="post-item-tag"
+              >
+                #{tagItem.topic.name}
+              </Link>
+            ))}
           </div>
         )}
 
@@ -254,6 +321,22 @@ function ShareIcon() {
       <circle cx="18" cy="19" r="3"/>
       <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
       <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+  );
+}
+
+function PinIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M12 2L12 22M12 2L8 6M12 2L16 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function StarSmallIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
     </svg>
   );
 }

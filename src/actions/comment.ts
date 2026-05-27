@@ -23,6 +23,14 @@ export async function createCommentAction(
     redirect("/login");
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { bannedAt: true },
+  });
+  if (dbUser?.bannedAt) {
+    return { errors: { _form: ["账号已被封禁，无法评论"] } };
+  }
+
   const raw = {
     body: formData.get("body"),
     postId: formData.get("postId"),
@@ -41,14 +49,22 @@ export async function createCommentAction(
     return { errors: { _form: ["帖子不存在"] } };
   }
 
-  if (parentId) {
-    const parent = await prisma.comment.findFirst({
-      where: { id: parentId, postId },
-    });
-    if (!parent) {
-      return { errors: { _form: ["回复目标无效"] } };
-    }
+  // Resolve parent comment and notification target in one query
+  const parentComment = parentId
+    ? await prisma.comment.findFirst({
+        where: { id: parentId, postId },
+        select: { authorId: true },
+      })
+    : null;
+
+  if (parentId && !parentComment) {
+    return { errors: { _form: ["回复目标无效"] } };
   }
+
+  const notifyUserId =
+    parentComment?.authorId ?? post.authorId;
+
+  const shouldNotify = notifyUserId && notifyUserId !== session.user.id;
 
   await prisma.comment.create({
     data: {
@@ -58,6 +74,20 @@ export async function createCommentAction(
       parentId: parentId ?? null,
     },
   });
+
+  if (shouldNotify) {
+    await prisma.notification.create({
+      data: {
+        type: parentId ? "reply" : "comment",
+        content: parentId
+          ? `${session.user.name ?? "有人"}回复了你的评论`
+          : `${session.user.name ?? "有人"}评论了你的帖子「${post.title}」`,
+        userId: notifyUserId,
+        actorId: session.user.id,
+        targetId: postId,
+      },
+    });
+  }
 
   revalidatePath(postPath(post.slug));
   return {};

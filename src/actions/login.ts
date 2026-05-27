@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { signIn } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations/auth";
+import { CredentialsSignin } from "next-auth";
 
 export type LoginState = {
   errors?: {
@@ -34,7 +35,13 @@ export async function loginAction(
       password,
       redirect: false,
     });
-  } catch (error) {
+  } catch (err) {
+    if (err instanceof CredentialsSignin) {
+      const msg = (err as CredentialsSignin).message;
+      if (msg?.includes("封禁")) {
+        return { errors: { _form: ["账号已被封禁，请联系管理员"] } };
+      }
+    }
     return { errors: { _form: ["邮箱或密码错误"] } };
   }
 

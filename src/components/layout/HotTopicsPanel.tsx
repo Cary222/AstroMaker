@@ -27,7 +27,7 @@ export function HotTopicsPanel({ topics }: HotTopicsPanelProps) {
         {list.map((topic, index) => (
           <Link
             key={topic.id}
-            href={`/?topic=${topic.slug}`}
+            href={`/tags/${topic.slug}`}
             className="hot-topic-item"
           >
             <span className={`hot-topic-rank ${

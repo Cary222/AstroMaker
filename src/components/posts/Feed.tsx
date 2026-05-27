@@ -1,6 +1,6 @@
 import { PostItem } from "./PostItem";
 
-type PostItemData = {
+export type PostItemData = {
   id: string;
   title: string;
   slug: string;
@@ -10,11 +10,25 @@ type PostItemData = {
   reposts: number;
   createdAt: Date;
   images: string[];
+  pinned: boolean;
+  featured: boolean;
   author: {
     id: string;
     name: string | null;
     image: string | null;
   };
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  tags?: Array<{
+    topic: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  }>;
   _count: {
     comments: number;
   };

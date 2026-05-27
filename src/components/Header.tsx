@@ -1,12 +1,41 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { isModerator } from "@/lib/permissions";
 import { MobileMenu } from "@/components/layout/MobileMenu";
+import { NotificationPanel } from "@/components/layout/NotificationPanel";
+import type { Session } from "next-auth";
 
-export async function Header() {
-  const session = await auth();
+export function Header({
+  session,
+  initialUnreadCount = 0,
+}: {
+  session: Session | null;
+  initialUnreadCount?: number;
+}) {
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [searchValue, setSearchValue] = useState("");
+
+  useEffect(() => {
+    if (!session?.user) return;
+    const fetchCount = async () => {
+      try {
+        const res = await fetch("/api/notifications/unread-count");
+        if (res.ok) {
+          const data = await res.json();
+          setUnreadCount(data.count ?? 0);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    fetchCount();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [session?.user, initialUnreadCount]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[var(--color-border)] bg-[var(--color-card)]/95 backdrop-blur-md shadow-sm">
@@ -33,14 +62,22 @@ export async function Header() {
 
         {/* 搜索框 */}
         <div className="flex-1 flex justify-center mx-2">
-          <div className="relative w-full max-w-sm">
+          <form
+            action="/search"
+            method="get"
+            className="relative w-full max-w-sm"
+            style={{ display: "flex" }}
+          >
             <SearchIcon />
             <input
               type="search"
+              name="q"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder="搜索帖子、话题、用户..."
               className="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-input-bg)] px-4 py-2 pl-9 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all"
             />
-          </div>
+          </form>
         </div>
 
         {/* 右：操作按钮 */}
@@ -54,19 +91,16 @@ export async function Header() {
                 <PlusIcon />
                 发帖
               </Link>
-              {isModerator(session.user.role) && (
+              {session.user.role === "MOD" || session.user.role === "ADMIN" ? (
                 <Link
                   href="/admin"
                   className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-card-hover)] transition-colors"
                 >
                   管理
                 </Link>
-              )}
+              ) : null}
               {/* 通知按钮 */}
-              <button className="relative flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] hover:bg-[var(--color-card-hover)] hover:text-[var(--color-foreground)] transition-colors">
-                <BellIcon />
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[var(--color-destructive)]" />
-              </button>
+              <NotificationPanel initialCount={unreadCount} onCountChange={setUnreadCount} />
               {/* 用户头像 */}
               <div className="flex items-center gap-2 cursor-pointer group">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-purple)] flex items-center justify-center text-white font-bold text-sm shadow-sm">
@@ -159,15 +193,6 @@ function SearchIcon() {
     >
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-      <path d="M13.73 21a2 2 0 01-3.46 0"/>
     </svg>
   );
 }

@@ -4,18 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { ThemeToggle } from "@/components/ThemeToggle";
-
-type SessionUser = {
-  id: string;
-  name: string | null;
-  email: string;
-  image: string | null;
-  role: string;
-};
 
 type MobileMenuProps = {
-  session: { user: SessionUser } | null;
+  session: { user?: { id?: string; name?: string | null; email?: string; image?: string | null; role?: string } } | null;
 };
 
 export function MobileMenu({ session }: MobileMenuProps) {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { loginAction, type LoginState } from "@/actions/login";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { GitHubSignInButton } from "./GitHubSignInButton";
 
 const initialState: LoginState = {};
 
@@ -23,6 +24,15 @@ export function LoginForm({ registered }: { registered?: boolean }) {
           注册成功，请登录。
         </p>
       )}
+
+      {/* GitHub OAuth 登录 */}
+      <GitHubSignInButton />
+
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ flex: 1, height: 1, background: "var(--color-border)" }} />
+        <span style={{ fontSize: "0.75rem", color: "var(--color-muted)" }}>或</span>
+        <div style={{ flex: 1, height: 1, background: "var(--color-border)" }} />
+      </div>
 
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">
