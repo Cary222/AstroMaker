@@ -7,7 +7,6 @@ import { loginSchema } from "@/lib/validations/auth";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  // Credentials 需 JWT 会话；二期 OAuth 可继续用同一 adapter
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -27,6 +26,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.passwordHash) return null;
 
+        if (user.bannedAt) return null;
+
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
 
@@ -41,14 +42,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;
         token.role = user.role;
+      } else if (token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub as string },
+          select: { bannedAt: true },
+        });
+        if (dbUser?.bannedAt) {
+          token.banned = true;
+        }
       }
       return token;
     },
-    session({ session, token }) {
+    async session({ session, token }) {
+      if (token.banned) return session;
       if (session.user && token.sub) {
         session.user.id = token.sub;
         session.user.role = token.role as typeof session.user.role;

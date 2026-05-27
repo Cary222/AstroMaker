@@ -2,12 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getPostBySlug } from "@/lib/posts";
-import { normalizePostSlug } from "@/lib/slug";
+import { normalizePostSlug, postPath } from "@/lib/slug";
 import { formatDate } from "@/lib/date";
 import { MarkdownBody } from "@/components/posts/MarkdownBody";
 import { CommentSection } from "@/components/posts/CommentSection";
 import { DeletePostButton } from "@/components/posts/DeletePostButton";
 import { canDeletePost } from "@/lib/permissions";
+
+const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export default async function PostPage({
   params,
@@ -19,6 +21,10 @@ export default async function PostPage({
   const [post, session] = await Promise.all([getPostBySlug(slug), auth()]);
 
   if (!post) notFound();
+
+  const isAuthor = session?.user?.id === post.authorId;
+  const isEditable =
+    isAuthor && Date.now() - post.createdAt.getTime() <= EDIT_WINDOW_MS;
 
   return (
     <div className="page-grid">
@@ -43,12 +49,36 @@ export default async function PostPage({
             </div>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h1 className="text-2xl font-bold">{post.title}</h1>
-              {session?.user &&
-                canDeletePost(
-                  session.user.role,
-                  session.user.id,
-                  post.authorId,
-                ) && <DeletePostButton postId={post.id} />}
+              <div style={{ display: "flex", gap: 8 }}>
+                {isEditable && (
+                  <Link
+                    href={`/posts/${encodeURIComponent(slug)}/edit`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "5px 14px",
+                      borderRadius: 8,
+                      border: "1px solid var(--color-border)",
+                      background: "var(--color-card-hover)",
+                      color: "var(--color-foreground)",
+                      fontSize: "0.8125rem",
+                      fontWeight: 500,
+                      textDecoration: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <PenIcon />
+                    编辑
+                  </Link>
+                )}
+                {session?.user &&
+                  canDeletePost(
+                    session.user.role,
+                    session.user.id,
+                    post.authorId,
+                  ) && <DeletePostButton postId={post.id} />}
+              </div>
             </div>
           </header>
 
@@ -59,7 +89,7 @@ export default async function PostPage({
           <CommentSection
             postId={post.id}
             postSlug={post.slug}
-            comments={post.comments}
+            initialComments={post.comments}
             isLoggedIn={!!session?.user}
             currentUserId={session?.user?.id}
             userRole={session?.user?.role}
@@ -67,5 +97,14 @@ export default async function PostPage({
         </article>
       </div>
     </div>
+  );
+}
+
+function PenIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
   );
 }

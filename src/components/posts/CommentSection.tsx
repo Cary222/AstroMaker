@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { useActionState } from "react";
 import Link from "next/link";
 import {
@@ -20,6 +21,7 @@ type Comment = {
   body: string;
   parentId: string | null;
   createdAt: Date;
+  likes: number;
   author: { id: string; name: string | null; image: string | null };
 };
 
@@ -65,18 +67,71 @@ function CommentForm({ postId }: { postId: string }) {
 export function CommentSection({
   postId,
   postSlug,
-  comments,
+  initialComments,
   isLoggedIn,
   currentUserId,
   userRole,
 }: {
   postId: string;
   postSlug: string;
-  comments: Comment[];
+  initialComments: Comment[];
   isLoggedIn: boolean;
   currentUserId?: string;
   userRole?: UserRole;
 }) {
+  const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
+
+  // Determine if we have more (initial comments may be partial)
+  const hasMore = cursor !== null || initialComments.length >= 20;
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore) return;
+    const lastCursor =
+      cursor ??
+      (initialComments.length > 0
+        ? initialComments[initialComments.length - 1].createdAt.toISOString()
+        : null);
+    if (!lastCursor) return;
+
+    setLoadingMore(true);
+    setLoadingError(null);
+    try {
+      const params = new URLSearchParams({ postId, cursor: lastCursor });
+      const res = await fetch(`/api/comments?${params}`);
+      if (!res.ok) throw new Error("加载失败");
+      const data = await res.json();
+      // Merge new top-level comments and their replies
+      const newTopLevel = data.comments.filter(
+        (c: Comment) => c.parentId === null,
+      );
+      const newReplies = data.comments.filter(
+        (c: Comment) => c.parentId !== null,
+      );
+      setComments((prev) => {
+        const existingIds = new Set(prev.map((c) => c.id));
+        const deduped = [...prev];
+        for (const c of newTopLevel) {
+          if (!existingIds.has(c.id)) deduped.push(c);
+        }
+        for (const c of newReplies) {
+          if (!existingIds.has(c.id)) deduped.push(c);
+        }
+        return deduped.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
+      });
+      setCursor(data.nextCursor);
+    } catch (e) {
+      setLoadingError(e instanceof Error ? e.message : "加载失败");
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, cursor, initialComments, postId]);
+
   return (
     <section className="mt-8 space-y-4">
       <h2 className="text-lg font-semibold">评论 ({comments.length})</h2>
@@ -107,8 +162,8 @@ export function CommentSection({
                 <span className="font-medium text-foreground">
                   {comment.author.name ?? "匿名"}
                 </span>
-                <time dateTime={comment.createdAt.toISOString()}>
-                  {formatDate(comment.createdAt)}
+                <time dateTime={new Date(comment.createdAt).toISOString()}>
+                  {formatDate(new Date(comment.createdAt))}
                 </time>
               </div>
               <p className="whitespace-pre-wrap text-sm">{comment.body}</p>
@@ -128,6 +183,25 @@ export function CommentSection({
         })}
         {comments.length === 0 && (
           <p className="text-sm text-muted-foreground">暂无评论，来抢沙发吧。</p>
+        )}
+
+        {/* 加载更多 */}
+        {hasMore && (
+          <div style={{ textAlign: "center", paddingTop: 12 }}>
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="btn-outline"
+              style={{ padding: "6px 20px", fontSize: "0.875rem" }}
+            >
+              {loadingMore ? "加载中…" : "加载更多评论"}
+            </button>
+            {loadingError && (
+              <p style={{ color: "var(--color-destructive)", marginTop: 8, fontSize: "0.8125rem" }}>
+                {loadingError}
+              </p>
+            )}
+          </div>
         )}
       </div>
     </section>

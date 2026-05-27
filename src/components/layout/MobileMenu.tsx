@@ -15,7 +15,7 @@ type SessionUser = {
 };
 
 type MobileMenuProps = {
-  session: { user: SessionUser } | null;
+  session: { user?: { id?: string; name?: string | null; email?: string; image?: string | null; role?: string } } | null;
 };
 
 export function MobileMenu({ session }: MobileMenuProps) {

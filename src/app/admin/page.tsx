@@ -23,6 +23,39 @@ export default async function AdminPage() {
         </p>
       </div>
 
+      <div style={{ display: "flex", gap: 8 }}>
+        <Link
+          href="/admin"
+          style={{
+            padding: "7px 16px",
+            borderRadius: 8,
+            background: "var(--color-accent)",
+            color: "white",
+            fontSize: "0.875rem",
+            fontWeight: 600,
+            textDecoration: "none",
+            border: "1px solid var(--color-accent)",
+          }}
+        >
+          帖子管理
+        </Link>
+        <Link
+          href="/admin/users"
+          style={{
+            padding: "7px 16px",
+            borderRadius: 8,
+            background: "var(--color-card-hover)",
+            color: "var(--color-foreground)",
+            fontSize: "0.875rem",
+            fontWeight: 600,
+            textDecoration: "none",
+            border: "1px solid var(--color-border)",
+          }}
+        >
+          用户管理
+        </Link>
+      </div>
+
       <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-card text-muted">

@@ -1,29 +1,24 @@
 import { auth } from "@/lib/auth";
 import { getHotTopics } from "@/actions/topic";
-import { getLatestPosts } from "@/lib/posts";
+import { getFeedPosts } from "@/actions/feed";
 import { LeftColumn } from "@/components/layout/LeftColumn";
 import { CenterColumn } from "@/components/layout/CenterColumn";
 import { RightColumn } from "@/components/layout/RightColumn";
 
 export default async function HomePage() {
-  const [session, posts, hotTopics] = await Promise.all([
-    auth(),
-    getLatestPosts(),
-    getHotTopics(),
-  ]);
+  const [session, hotTopics] = await Promise.all([auth(), getHotTopics()]);
 
-  const postsWithStats = posts.map((p: (typeof posts)[number]) => ({
-    ...p,
-    views: 0,
-    likes: 0,
-    reposts: 0,
-    images: [] as string[],
-  }));
+  // Server-side initial posts for SSR + SEO
+  const initial = await getFeedPosts({ tab: "latest", limit: 20 });
 
   return (
     <div className="page-grid">
       <LeftColumn />
-      <CenterColumn session={session} posts={postsWithStats} />
+      <CenterColumn
+        session={session}
+        initialPosts={initial.posts}
+        initialCursor={initial.nextCursor}
+      />
       <RightColumn hotTopics={hotTopics} />
     </div>
   );

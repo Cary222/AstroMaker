@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { auth } from "@/lib/auth";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -20,11 +21,13 @@ export const metadata: Metadata = {
   description: "AstroMaker —— 面向天文爱好者与创作者的交流、分享、协作社区",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
@@ -50,7 +53,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col antialiased`}
       >
         <ThemeProvider>
-          <Header />
+          <Header session={session} />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />
         </ThemeProvider>

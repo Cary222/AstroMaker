@@ -1,44 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { Feed } from "@/components/posts/Feed";
 import type { Session } from "next-auth";
-
-type PostItemData = {
-  id: string;
-  title: string;
-  slug: string;
-  body: string;
-  views: number;
-  likes: number;
-  reposts: number;
-  createdAt: Date;
-  images: string[];
-  author: {
-    id: string;
-    name: string | null;
-    image: string | null;
-  };
-  _count: {
-    comments: number;
-  };
-};
+import type { FeedPost, FeedTab } from "@/actions/feed";
 
 type CenterColumnProps = {
   session: Session | null;
-  posts: PostItemData[];
+  initialPosts: FeedPost[];
+  initialCursor: string | null;
 };
 
-export function CenterColumn({ session, posts }: CenterColumnProps) {
-  const [activeTab, setActiveTab] = useState<"hot" | "following" | "latest">("hot");
+export function CenterColumn({ session, initialPosts, initialCursor }: CenterColumnProps) {
+  const [activeTab, setActiveTab] = useState<FeedTab>("latest");
+  const [posts, setPosts] = useState<FeedPost[]>(initialPosts);
+  const [cursor, setCursor] = useState<string | null>(initialCursor);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleTabChange = useCallback(
+    async (tab: FeedTab) => {
+      if (tab === activeTab) return;
+      setActiveTab(tab);
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({ tab, limit: "20" });
+        const res = await fetch(`/api/feed?${params}`);
+        if (!res.ok) throw new Error("加载失败");
+        const data = await res.json();
+        setPosts(data.posts);
+        setCursor(data.nextCursor);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "加载失败");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeTab],
+  );
+
+  const loadMore = useCallback(async () => {
+    if (!cursor || loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ tab: activeTab, cursor, limit: "20" });
+      const res = await fetch(`/api/feed?${params}`);
+      if (!res.ok) throw new Error("加载失败");
+      const data = await res.json();
+      setPosts((prev) => [...prev, ...data.posts]);
+      setCursor(data.nextCursor);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "加载失败");
+    } finally {
+      setLoading(false);
+    }
+  }, [cursor, loading, activeTab]);
 
   return (
     <div className="col-center flex flex-col gap-4">
-
       {/* Hero 横幅 */}
       <div className="hero-banner">
-        {/* 星系装饰图 */}
         <div style={{
           position: "absolute",
           right: 20,
@@ -82,24 +106,15 @@ export function CenterColumn({ session, posts }: CenterColumnProps) {
       <div className="feed-container">
         {/* Tabs */}
         <div className="feed-tabs">
-          <button
-            className={`feed-tab${activeTab === "hot" ? " active" : ""}`}
-            onClick={() => setActiveTab("hot")}
-          >
-            热门
-          </button>
-          <button
-            className={`feed-tab${activeTab === "following" ? " active" : ""}`}
-            onClick={() => setActiveTab("following")}
-          >
-            关注
-          </button>
-          <button
-            className={`feed-tab${activeTab === "latest" ? " active" : ""}`}
-            onClick={() => setActiveTab("latest")}
-          >
-            最新
-          </button>
+          {(["hot", "following", "latest"] as FeedTab[]).map((tab) => (
+            <button
+              key={tab}
+              className={`feed-tab${activeTab === tab ? " active" : ""}`}
+              onClick={() => handleTabChange(tab)}
+            >
+              {tab === "hot" ? "热门" : tab === "following" ? "关注" : "最新"}
+            </button>
+          ))}
 
           {/* 发帖快捷按钮 */}
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", paddingRight: 12 }}>
@@ -119,8 +134,6 @@ export function CenterColumn({ session, posts }: CenterColumnProps) {
                   textDecoration: "none",
                   transition: "opacity 0.15s",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >
                 <PlusIcon />
                 发帖
@@ -142,7 +155,32 @@ export function CenterColumn({ session, posts }: CenterColumnProps) {
         </div>
 
         {/* 帖子列表 */}
-        <Feed posts={posts} />
+        {loading && posts.length === 0 ? (
+          <div style={{ padding: "32px", textAlign: "center", color: "var(--color-muted)" }}>
+            加载中…
+          </div>
+        ) : (
+          <Feed posts={posts} />
+        )}
+
+        {/* 加载更多 */}
+        {cursor && (
+          <div style={{ padding: "14px 18px", textAlign: "center" }}>
+            <button
+              onClick={loadMore}
+              disabled={loading}
+              className="btn-outline"
+              style={{ padding: "7px 24px" }}
+            >
+              {loading ? "加载中…" : "加载更多"}
+            </button>
+            {error && (
+              <p style={{ color: "var(--color-destructive)", marginTop: 8, fontSize: "0.875rem" }}>
+                {error}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
